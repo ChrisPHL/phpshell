@@ -17,7 +17,7 @@ Installation
 
 Installation is easy: first unpack the tarball or zipfile downloaded
 from the above website into your webserver.  This will create a
-subdirectory called phpweather-@VERSION@ for PHP Shell version @VERSION@.
+subdirectory called phpshell-@VERSION@ for PHP Shell version @VERSION@.
 
 Try loading the file ``phpshell.php`` in your browser and check that
 you are served a page that asks you to authenticate yourself with a
