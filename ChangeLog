@@ -1,3 +1,18 @@
+2003-11-11  Martin Geisler  <gimpster@gimpster.com>
+
+	* AUTHORS 1.6:
+	Added Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at>.
+
+	* phpshell.php 1.25:
+	Ups, I commited with $passwd = array('foo' => 'bar').
+
+	* phpshell.php 1.24:
+	Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at> suggested
+	that the directory list should be sorted.
+
+	Also, changing directory through symbolic links now works as expected,
+	so that it's possible to go back using 'cd ..'.
+
 2003-04-01  Martin Geisler  <gimpster@gimpster.com>
 
 	* INSTALL 1.4:
@@ -22,11 +37,6 @@
 	* phpshell.php 1.22: Changed PHP Shell into PhpShell.
 
 	* phpshell.php 1.21: Added HTTP basic authentication to the script.
-
-	* .htaccess 1.2:
-	The .htaccess file will now prevent people from using phpshell.php on
-	new installations before they have either deleted it or changed the
-	path to the .htpasswd file.
 
 	* AUTHORS 1.5: Moved Jeremy Miller <JMiller@marketaxess.com>.
 
@@ -122,7 +132,7 @@
 
 	* INSTALL 1.2: Made BUGS lowercase.
 
-	* .htaccess 1.1, INSTALL 1.1, README 1.1: New file.
+	* INSTALL 1.1, README 1.1: New file.
 
 	* phpshell.php 1.7:
 	Removed 'Martin Geisler' from the title, putting my name on the bottom

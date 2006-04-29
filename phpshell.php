@@ -3,11 +3,11 @@
 /*
 
   **************************************************************
-  *                      PhpShell 1.8                        *
+  *                      PhpShell 1.9                          *
   **************************************************************
-  $Id: phpshell.php,v 1.23 2003/04/01 21:40:15 gimpster Exp $
+  $Id: phpshell.php,v 1.25 2003/11/11 16:20:19 gimpster Exp $
 
-  PhpShell is aninteractive PHP-page that will execute any command
+  PhpShell is an interactive PHP-page that will execute any command
   entered. See the files README and INSTALL or
   http://www.gimpster.com/wiki/PhpShell for further information.
 
@@ -30,8 +30,6 @@
   
 */
 
-define('PHPSHELL_VERSION', '1.8');
-
 /* Set your usernames and passwords like this:
 
    $passwd = array('username' => 'password');
@@ -51,7 +49,7 @@ if (!isset($_SERVER['PHP_AUTH_USER']) ||
     !isset($_SERVER['PHP_AUTH_PW']) ||
     !isset($passwd[$_SERVER['PHP_AUTH_USER']]) ||
     $passwd[$_SERVER['PHP_AUTH_USER']] != $_SERVER['PHP_AUTH_PW']) {
-  header('WWW-Authenticate: Basic realm="PhpShell 1.8"');
+  header('WWW-Authenticate: Basic realm="PhpShell 1.9"');
   header('HTTP/1.0 401 Unauthorized');
   $authenticated = false;
 } else {
@@ -67,16 +65,17 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>PhpShell <?php echo PHPSHELL_VERSION ?></title>
+  <title>PhpShell 1.9</title>
   <link rel="stylesheet" href="phpshell.css" type="text/css" />
 </head>
-<body>
 
-<h1>PhpShell <?php echo PHPSHELL_VERSION ?></h1>
+<body onload="document.forms[0].command.focus();">
+
+<h1>PhpShell 1.9</h1>
 
 <?php if (!$authenticated) { ?>
 <p>You failed to authenticate yourself to PhpShell. You can <a
-href="phpshell.php">reload</a> to try again.</p>
+href="<?php echo $_SERVER['PHP_SELF'] ?>">reload</a> to try again.</p>
 
 <p>Try reading the <a href="INSTALL">INSTALL</a> file if you're having
 problems with installing PhpShell.</p>
@@ -84,9 +83,9 @@ problems with installing PhpShell.</p>
 </body>
 </html>
 
-<?php exit; } //' <- fix syntax highlight... ?>
-
-<?php
+<?php // ' <-- fix syntax highlight in Emacs
+  exit;
+}
 
 error_reporting (E_ALL);
 
@@ -104,6 +103,8 @@ if ($work_dir != '') {
         $new_dir = $regs[1]; // 'cd /something/...'
       } else {
         $new_dir = $work_dir . '/' . $regs[1]; // 'cd somedir/...'
+        $new_dir = str_replace('/./', '/', $new_dir);
+        $new_dir = preg_replace('|/?[^/]*/\.\.|', '$1', $new_dir);
       }
       if (file_exists($new_dir) && is_dir($new_dir)) {
         $work_dir = $new_dir;
@@ -119,8 +120,7 @@ if ($work_dir != '' && file_exists($work_dir) && is_dir($work_dir)) {
 }
 
 /* We now update $work_dir to avoid things like '/foo/../bar': */
-$work_dir = exec('pwd');
-
+if ($work_dir == '') $work_dir = getcwd();
 ?>
 
 <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
@@ -149,11 +149,13 @@ if (!empty($work_dir_splitted[0])) {
 <?php
 /* Now we make a list of the directories. */
 $dir_handle = opendir($work_dir);
+/* We store the output so that we can sort it later: */
+$options = array();
 /* Run through all the files and directories to find the dirs. */
 while ($dir = readdir($dir_handle)) {
   if (is_dir($dir)) {
     if ($dir == '.') {
-      echo "<option value=\"$work_dir\" selected=\"selected\">Current Directory</option>\n";
+      $options['.'] = "<option value=\"$work_dir\" selected=\"selected\">Current Directory</option>";
     } elseif ($dir == '..') {
       /* We have found the parent dir. We must be carefull if the
        * parent directory is the root directory (/). */
@@ -164,29 +166,34 @@ while ($dir = readdir($dir_handle)) {
 	/* The last / in work_dir were the first charecter.  This
          * means that we have a top-level directory eg. /bin or /home
          * etc... */
-      echo "<option value=\"/\">Parent Directory</option>\n";
+        $options['..'] = "<option value=\"/\">Parent Directory</option>";
       } else {
-      /* We do a little bit of string-manipulation to find the parent
-       * directory... Trust me - it works :-) */
-      echo "<option value=\"". strrev(substr(strstr(strrev($work_dir), "/"), 1)) ."\">Parent Directory</option>\n";
+        /* We do a little bit of string-manipulation to find the parent
+         * directory... Trust me - it works :-) */
+        $options['..'] = "<option value=\"" .
+          strrev(substr(strstr(strrev($work_dir), "/"), 1)) .
+          "\">Parent Directory</option>";
       }
     } else {
       if ($work_dir == '/') {
-	echo "<option value=\"$work_dir$dir\">$dir</option>\n";
+	$options[$dir] = "<option value=\"/$dir\">$dir</option>";
       } else {
-	echo "<option value=\"$work_dir/$dir\">$dir</option>\n";
+	$options[$dir] = "<option value=\"$work_dir/$dir\">$dir</option>";
       }
     }
   }
 }
 closedir($dir_handle);
 
+ksort($options);
+
+echo implode("\n", $options)
+
 ?>
 
 </select></p>
 
 <p>Command: <input type="text" name="command" size="60" /></p>
-
 
 <p>Enable <code>stderr</code>-trapping? <input type="checkbox" name="stderr"
 <?php if ($stderr) echo "checked=\"checked\""; ?> /> <input name="submit_btn" type="submit" value="Execute Command" /></p>
@@ -197,12 +204,13 @@ closedir($dir_handle);
 <p><textarea cols="80" rows="20" readonly="readonly">
 <?php
 if (!empty($command)) {
+  if ($command == 'ls') {
+    /* ls looks much better with ' -F', IMHO. */
+    $command .= ' -F';
+  }
   if ($stderr) {
     $tmpfile = tempnam('/tmp', 'phpshell');
     $command .= " 1> $tmpfile 2>&1; cat $tmpfile; rm $tmpfile";
-  } elseif ($command == 'ls') {
-    /* ls looks much better with ' -F', IMHO. */
-    $command .= ' -F';
   }
   echo htmlspecialchars(shell_exec($command), ENT_COMPAT, 'UTF-8');
 }
@@ -212,16 +220,14 @@ if (!empty($command)) {
 </fieldset>
 </form>
 
-<script type="text/javascript">
-document.forms[0].command.focus();
-</script>
-
 <hr />
 
-<address>Copyright &copy; 2000&ndash;2003, <a
-href="mailto:gimpster@gimpster.com">Martin Geisler</a>. Get the latest
-version at <a
-href="http://www.gimpster.com/">www.gimpster.com/wiki/PhpShell</a>.</address>
+<address>
+Copyright &copy; 2000&ndash;2003, <a
+href="mailto:gimpster@gimpster.com">Martin Geisler</a>. Get the
+latest version at <a
+href="http://www.gimpster.com/wiki/PhpShell">www.gimpster.com/wiki/PhpShell</a>.
+</address>
 
 <p>
   <a href="http://validator.w3.org/check/referer">

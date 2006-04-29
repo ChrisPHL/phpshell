@@ -1,4 +1,4 @@
-Main author: Martin Geisler <gimpster@gimpster.com>
+Main author: Martin Geisler <gimpster@gimpster.com>         -*- text -*-
 
 Thanks goes to all these persons who have helped:
 
@@ -22,3 +22,7 @@ Jeremy Miller <JMiller@marketaxess.com>
 
 Michael Zech <keldrin@web.de>
   Patch to make the stderr-checkbox remember it's state.
+
+Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at>
+  Multiple patches, including the sorting of directory entries in the
+  drop down box.
