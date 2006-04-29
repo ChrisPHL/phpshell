@@ -1,3 +1,31 @@
+2004-03-27  Martin Geisler  <gimpster@gimpster.com>
+
+	* phpshell.php 1.29: Removed debug output.
+
+	* README 1.11: Updated documentation for new cool shell-like interface.
+
+	* INSTALL 1.5:
+	Updated documentation about the command substitution using alises.
+
+	* phpshell.css 1.2:
+	New styles to make the textarea and input box blend together.
+
+	* phpshell.php 1.28: A little documentation for the alias feature.
+
+	* phpshell.php 1.27:
+	The shell now looks and behaves much more like a real shell: the shell
+	now has a commandline history just like a real shell.
+
+	The parsing of 'cd' commands have been rewritten so that even more
+	special cases are taken care of, and simple command substitution using
+	aliases have been introduced.
+
+2004-03-24  Martin Geisler  <gimpster@gimpster.com>
+
+	* phpshell.php 1.26:
+	Increased year of copyright to 2004.  Fixed the references to the PNG
+	images, as pointed out by Michael Z. Bell.
+
 2003-11-11  Martin Geisler  <gimpster@gimpster.com>
 
 	* AUTHORS 1.6:

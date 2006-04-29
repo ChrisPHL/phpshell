@@ -12,9 +12,26 @@ h1 {
 }
 
 img {
-  border: 0;
+  border: none;
 }
 
-legend {
-  font-weight: bold;
+div {
+  border: inset 2px red;
+}
+
+textarea { 
+  width: 100%;
+  border: none;
+  padding: 2px 2px 0px;
+}
+
+p.prompt {
+  font-family: monospace;
+  margin: 0px;
+  padding: 0px 2px 2px;
+}
+
+input.prompt {
+  border: none;
+  font-family: monospace;
 }

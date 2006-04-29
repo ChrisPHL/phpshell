@@ -3,15 +3,15 @@
 /*
 
   **************************************************************
-  *                      PhpShell 1.9                          *
+  *                      PhpShell 2.0                          *
   **************************************************************
-  $Id: phpshell.php,v 1.25 2003/11/11 16:20:19 gimpster Exp $
+  $Id: phpshell.php,v 1.29 2004/03/27 00:59:26 gimpster Exp $
 
-  PhpShell is an interactive PHP-page that will execute any command
+  PhpShell is an interactive PHP script that will execute any command
   entered. See the files README and INSTALL or
   http://www.gimpster.com/wiki/PhpShell for further information.
 
-  Copyright (C) 2000-2003 Martin Geisler <gimpster@gimpster.com>
+  Copyright (C) 2000-2004 Martin Geisler <gimpster@gimpster.com>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -45,15 +45,127 @@
 */
 $passwd = array();
 
+/* Set your aliases here.  Each key in the array will be substituted
+ * with the corresponding value before the commands are executed. */
+$aliases = array('ls' => 'ls -CvhF',
+                 'll' => 'ls -lvhF');
+
 if (!isset($_SERVER['PHP_AUTH_USER']) ||
     !isset($_SERVER['PHP_AUTH_PW']) ||
     !isset($passwd[$_SERVER['PHP_AUTH_USER']]) ||
     $passwd[$_SERVER['PHP_AUTH_USER']] != $_SERVER['PHP_AUTH_PW']) {
-  header('WWW-Authenticate: Basic realm="PhpShell 1.9"');
+  header('WWW-Authenticate: Basic realm="PhpShell 2.0"');
   header('HTTP/1.0 401 Unauthorized');
   $authenticated = false;
 } else {
   $authenticated = true;
+
+  /* We now start the session. */
+  session_start();
+  
+  /* Initialize the session variables. */
+  if (empty($_SESSION['cwd']) || !empty($_REQUEST['reset'])) {
+    $_SESSION['cwd'] = getcwd();
+    $_SESSION['history'] = array();
+    $_SESSION['output'] = '';
+  }
+  
+  if (!empty($_REQUEST['command'])) {
+    if (get_magic_quotes_gpc()) {
+      /* We don't want to add the commands to the history in the
+       * escaped form, so we remove the backslashes now. */
+      $_REQUEST['command'] = stripslashes($_REQUEST['command']);
+    }
+
+    /* Save the command for late use in the JavaScript.  If the
+     * command is already in the history, then the old entry is
+     * removed before the new entry is put into the list at the
+     * front. */
+    if (($i = array_search($_REQUEST['command'], $_SESSION['history'])) !== false)
+      unset($_SESSION['history'][$i]);
+    
+    array_unshift($_SESSION['history'], $_REQUEST['command']);
+  
+    /* Now append the commmand to the output. */
+    $_SESSION['output'] .= '$ ' . $_REQUEST['command'] . "\n";
+
+    /* Initialize the current working directory. */
+    if (ereg('^[[:blank:]]*cd[[:blank:]]*$', $_REQUEST['command'])) {
+      $_SESSION['cwd'] = dirname(__FILE__);
+    } elseif (ereg('^[[:blank:]]*cd[[:blank:]]+([^;]+)$', $_REQUEST['command'], $regs)) {
+      /* The current command is a 'cd' command which we have to handle
+       * as an internal shell command. */
+
+      if ($regs[1][0] == '/') {
+        /* Absolute path, we use it unchanged. */
+        $new_dir = $regs[1];
+      } else {
+        /* Relative path, we append it to the current working
+         * directory. */
+        $new_dir = $_SESSION['cwd'] . '/' . $regs[1];
+      }
+      
+      /* Transform '/./' into '/' */
+      while (strpos($new_dir, '/./') !== false)
+        $new_dir = str_replace('/./', '/', $new_dir);
+
+      /* Transform '//' into '/' */
+      while (strpos($new_dir, '//') !== false)
+        $new_dir = str_replace('//', '/', $new_dir);
+
+      /* Transform 'x/..' into '' */
+      while (preg_match('|/\.\.(?!\.)|', $new_dir))
+        $new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
+      
+      if ($new_dir == '') $new_dir = '/';
+      
+      /* Try to change directory. */
+      if (@chdir($new_dir)) {
+        $_SESSION['cwd'] = $new_dir;
+      } else {
+        $_SESSION['output'] .= "cd: could not change to: $new_dir\n";
+      }
+      
+    } else {
+      /* The command is not a 'cd' command, so we execute it after
+       * changing the directory and save the output. */
+      chdir($_SESSION['cwd']);
+
+      /* Alias expansion. */
+      $length = strcspn($_REQUEST['command'], " \t");
+      $token = substr($_REQUEST['command'], 0, $length);
+      if (isset($aliases[$token]))
+        $_REQUEST['command'] = $aliases[$token] . substr($_REQUEST['command'], $length);
+    
+      $p = proc_open($_REQUEST['command'],
+                     array(1 => array('pipe', 'w'),
+                           2 => array('pipe', 'w')),
+                     $io);
+
+      /* Read output sent to stdout. */
+      while (!feof($io[1])) {
+        $_SESSION['output'] .= htmlspecialchars(fgets($io[1]),
+                                                ENT_COMPAT, 'UTF-8');
+      }
+      /* Read output sent to stderr. */
+      while (!feof($io[2])) {
+        $_SESSION['output'] .= htmlspecialchars(fgets($io[2]),
+                                                ENT_COMPAT, 'UTF-8');
+      }
+      
+      fclose($io[1]);
+      fclose($io[2]);
+      proc_close($p);
+    }
+  }
+
+  /* Build the command history for use in the JavaScript */
+  if (empty($_SESSION['history'])) {
+    $js_command_hist = '""';
+  } else {
+    $escaped = array_map('addslashes', $_SESSION['history']);
+    $js_command_hist = '"", "' . implode('", "', $escaped) . '"';
+  }
 }
 
 header('Content-Type: text/html; charset=UTF-8');
@@ -65,13 +177,43 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>PhpShell 1.9</title>
+  <title>PhpShell 2.0</title>
   <link rel="stylesheet" href="phpshell.css" type="text/css" />
+
+  <script type="text/javascript" language="JavaScript">
+  var current_line = 0;
+  var command_hist = new Array(<?php echo $js_command_hist ?>);
+  var last = 0;
+
+  function key(e) {
+    if (!e) var e = window.event;
+
+    if (e.keyCode == 38 && current_line < command_hist.length-1) {
+      command_hist[current_line] = document.shell.command.value;
+      current_line++;
+      document.shell.command.value = command_hist[current_line];
+    }
+
+    if (e.keyCode == 40 && current_line > 0) {
+      command_hist[current_line] = document.shell.command.value;
+      current_line--;
+      document.shell.command.value = command_hist[current_line];
+    }
+
+  }
+
+function init() {
+  document.shell.setAttribute("autocomplete", "off");
+  document.shell.output.scrollTop = document.shell.output.scrollHeight;
+  document.shell.command.focus();
+}
+
+  </script>
 </head>
 
-<body onload="document.forms[0].command.focus();">
+<body onload="init()">
 
-<h1>PhpShell 1.9</h1>
+<h1>PhpShell 2.0</h1>
 
 <?php if (!$authenticated) { ?>
 <p>You failed to authenticate yourself to PhpShell. You can <a
@@ -89,141 +231,43 @@ problems with installing PhpShell.</p>
 
 error_reporting (E_ALL);
 
-$work_dir = empty($_REQUEST['work_dir']) ? '' : $_REQUEST['work_dir'];
-$command  = empty($_REQUEST['command'])  ? '' : $_REQUEST['command'];
-$stderr   = empty($_REQUEST['stderr'])   ? '' : $_REQUEST['stderr'];
-
-/* First we check if there has been asked for a working directory. */
-if ($work_dir != '') {
-  /* A workdir has been asked for */
-  if ($command != '') {
-    if (ereg('^[[:blank:]]*cd[[:blank:]]+([^;]+)$', $command, $regs)) {
-      /* We try and match a cd command. */
-      if ($regs[1][0] == '/') {
-        $new_dir = $regs[1]; // 'cd /something/...'
-      } else {
-        $new_dir = $work_dir . '/' . $regs[1]; // 'cd somedir/...'
-        $new_dir = str_replace('/./', '/', $new_dir);
-        $new_dir = preg_replace('|/?[^/]*/\.\.|', '$1', $new_dir);
-      }
-      if (file_exists($new_dir) && is_dir($new_dir)) {
-        $work_dir = $new_dir;
-      }
-      $command = '';
-    }
-  }
-}
-
-if ($work_dir != '' && file_exists($work_dir) && is_dir($work_dir)) {
-  /* We change directory to that dir: */
-  chdir($work_dir);
-}
-
-/* We now update $work_dir to avoid things like '/foo/../bar': */
-if ($work_dir == '') $work_dir = getcwd();
-?>
-
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
-<fieldset><legend>Input</legend>
-<p>Current working directory: <b>
-<?php
-
-$work_dir_splitted = explode('/', substr($work_dir, 1));
-
-echo '<a href="' . $_SERVER['PHP_SELF'] . '?work_dir=/">Root</a>/';
-
-if (!empty($work_dir_splitted[0])) {
-  $path = '';
-  for ($i = 0; $i < count($work_dir_splitted); $i++) {
-    $path .= '/' . $work_dir_splitted[$i];
-    printf('<a href="%s?work_dir=%s">%s</a>/',
-           $_SERVER['PHP_SELF'],
-           urlencode($path),
-           $work_dir_splitted[$i]);
-  }
-}
-
-?></b></p>
-<p>Choose new working directory:
-<select name="work_dir" onchange="this.form.submit()">
-<?php
-/* Now we make a list of the directories. */
-$dir_handle = opendir($work_dir);
-/* We store the output so that we can sort it later: */
-$options = array();
-/* Run through all the files and directories to find the dirs. */
-while ($dir = readdir($dir_handle)) {
-  if (is_dir($dir)) {
-    if ($dir == '.') {
-      $options['.'] = "<option value=\"$work_dir\" selected=\"selected\">Current Directory</option>";
-    } elseif ($dir == '..') {
-      /* We have found the parent dir. We must be carefull if the
-       * parent directory is the root directory (/). */
-      if (strlen($work_dir) == 1) {
-	/* work_dir is only 1 charecter - it can only be / There's no
-         * parent directory then. */
-      } elseif (strrpos($work_dir, '/') == 0) {
-	/* The last / in work_dir were the first charecter.  This
-         * means that we have a top-level directory eg. /bin or /home
-         * etc... */
-        $options['..'] = "<option value=\"/\">Parent Directory</option>";
-      } else {
-        /* We do a little bit of string-manipulation to find the parent
-         * directory... Trust me - it works :-) */
-        $options['..'] = "<option value=\"" .
-          strrev(substr(strstr(strrev($work_dir), "/"), 1)) .
-          "\">Parent Directory</option>";
-      }
-    } else {
-      if ($work_dir == '/') {
-	$options[$dir] = "<option value=\"/$dir\">$dir</option>";
-      } else {
-	$options[$dir] = "<option value=\"$work_dir/$dir\">$dir</option>";
-      }
-    }
-  }
-}
-closedir($dir_handle);
-
-ksort($options);
-
-echo implode("\n", $options)
+if (empty($_REQUEST['rows'])) $_REQUEST['rows'] = 24;
 
 ?>
 
-</select></p>
+<p>Current Working Directory: <code><?php echo $_SESSION['cwd'] ?></code></p>
 
-<p>Command: <input type="text" name="command" size="60" /></p>
-
-<p>Enable <code>stderr</code>-trapping? <input type="checkbox" name="stderr"
-<?php if ($stderr) echo "checked=\"checked\""; ?> /> <input name="submit_btn" type="submit" value="Execute Command" /></p>
-</fieldset>
-
-<fieldset><legend>Output</legend>
-
-<p><textarea cols="80" rows="20" readonly="readonly">
+<form name="shell" action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
+<div>
+<textarea name="output" readonly="readonly" cols="80" rows="<?php echo $_REQUEST['rows'] ?>">
 <?php
-if (!empty($command)) {
-  if ($command == 'ls') {
-    /* ls looks much better with ' -F', IMHO. */
-    $command .= ' -F';
-  }
-  if ($stderr) {
-    $tmpfile = tempnam('/tmp', 'phpshell');
-    $command .= " 1> $tmpfile 2>&1; cat $tmpfile; rm $tmpfile";
-  }
-  echo htmlspecialchars(shell_exec($command), ENT_COMPAT, 'UTF-8');
-}
+$lines = substr_count($_SESSION['output'], "\n");
+$padding = str_repeat("\n", max(0, $_REQUEST['rows']+1 - $lines));
+echo rtrim($padding . $_SESSION['output']);
 ?>
-</textarea></p>
-
-</fieldset>
+</textarea>
+<p class="prompt">
+  $&nbsp;<input class="prompt" name="command" type="text"
+                onkeyup="key(event)" size="78" tabindex="1">
+</p>
+</div>
+<p>
+  <input type="submit" value="Execute Command" />
+  <input type="submit" name="reset" value="Reset" />
+  Rows: <input type="text" name="rows" value="<?php echo $_REQUEST['rows'] ?>" />
+</p>
 </form>
 
 <hr />
 
+<p>Please consult the <a href="README">README</a> and <a
+href="INSTALL">INSTALL</a> files for instruction on how to use
+PhpShell.</p>
+
+<hr />
+
 <address>
-Copyright &copy; 2000&ndash;2003, <a
+Copyright &copy; 2000&ndash;2004, <a
 href="mailto:gimpster@gimpster.com">Martin Geisler</a>. Get the
 latest version at <a
 href="http://www.gimpster.com/wiki/PhpShell">www.gimpster.com/wiki/PhpShell</a>.
@@ -231,13 +275,11 @@ href="http://www.gimpster.com/wiki/PhpShell">www.gimpster.com/wiki/PhpShell</a>.
 
 <p>
   <a href="http://validator.w3.org/check/referer">
-    <img src="valid-xhtml10" alt="Valid XHTML 1.0 Strict!"
+    <img src="valid-xhtml10.png" alt="Valid XHTML 1.0 Strict!"
          height="31" width="88" />
   </a>
   <a href="http://jigsaw.w3.org/css-validator/check/referer">
-    <img src="http://jigsaw.w3.org/css-validator/images/vcss"
-         width="88" height="31"
-         alt="Valid CSS!" />
+    <img src="vcss.png" alt="Valid CSS!" width="88" height="31" />
   </a>
 </p>
 
