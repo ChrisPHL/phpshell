@@ -1,0 +1,130 @@
+README for PHP Shell
+Copyright (C) 2000 Martin Geisler <gimpster@gimpster.com>
+Licensed under the GNU GPL. See the file COPYING for details.
+
+What is PHP Shell?
+------------------
+PHP Shell is a shell wrapped in a PHP script. It's a tool you can use
+to execute arbiritary shell-commands or browse the filesystem on your
+remote webserver. This replaces, to a degree, a normal telnet-connection.
+You can use it for transferring your site as a compressed file, and
+then unpack it on the webserver, administration and maintenance of
+your website using commands like ps, free, du, df etc...
+ 
+
+Limitations
+-----------
+There are some limitations on what kind of programs you can run. It
+won't do no good if you start something like Netscape or even vi. All
+programs have to be strictly command-line programs, and they will have
+no chance of getting user input after they have been lunched. They
+properly also have to terminate within 30 seconds, as this is the
+default time-limit imposed unto all PHP-scripts, to prevent them from
+running in an infinite loop. Your ISP may have set this time-limit to
+something else.
+
+But you can rely on all the normal shell-functionality, like pipes,
+output and input redirection, etc ... (There is no <tab>-completion,
+though :-)
+
+
+Who am I?
+---------
+(Well, my name is Martin, but that's not the point :-)
+
+You may not be the same user when using PHP Shell, as you are when you
+upload your files with ftp. On some systems you will be 'nobody', on
+other systems you will become 'httpd' or 'www-data'. This is a rather
+dangerous "feature" of PHP Shell! So use it at your own risk - I wont
+be responsible if your account is closed or something like that
+happens.
+
+If you want to execute code as different user, then it's possible
+to do so by using the Sudo program available from this address:
+
+  http://www.courtesan.com/sudo/
+
+The trick is to configure Sudo to allow the user running the webserver
+to execute certain commands as a more privileged user. Please refer to
+the documentation for Sudo for further information about doing this.
+Thanks goes to Jeremy Miller <JMiller@marketaxess.com> for this
+information.</p>
+
+
+How to use it
+-------------
+When you point your browser at PHP Shell and types in your password
+(see the file INSTALL for more information on how to password-protect
+PHP Shell), you'll be presented with a rather simple page. It has the
+following elements:
+
+The Command Input box:
+  Here you can type a command, and when you press the "Execute" button
+  the command will be executed in the current working directory.
+
+  If your command is 'cd something', then it won't be executed like an
+  ordinary command - the current working directory will be updated
+  instead. This works with both relative and absolute paths.
+
+  And if your command is 'ls', then it will be changed to 'ls -F'.
+  This makes ls append indicators to the filenames: directories end with 
+  a slash, executable files will end with an asterisk and so on.
+
+The current working directory:
+  This is the directory where all command are being executed. You can
+  use the dropdown-box to choose a new working directory. To quickly
+  jump towards the root of the filesystem, just click on
+  one of the links to jump to that directory.
+
+The Output
+  Here goes the output from your commands. You will be able to scroll
+  thought the box if the output is to large to fit inside.
+  It is only output to stdout that goes into the Output box. This can
+  be rather confusing, because then sometimes you just don't get any
+  output.
+  I've made a workaround, that fixes the problem. If you select
+  "Enable stderr-trapping" your command <command> will be executed
+  this way:
+  
+  <command> 1> /tmp/output.txt 2>&1; cat /tmp/output.txt; rm /tmp/output.txt
+
+  It is done by simply appending the arguments to your command. It
+  redirects all output from your command to a file, both stdout and
+  stderr. It then shows the file, and cleans things up when
+  finished. It's quick and dirty, and will only work if you haven't
+  already redirected the output.
+
+
+Download
+--------
+You can download PHP Shell from http://www.gimpster.com. The tarball
+contains these files:
+
+phpshell.php
+  This is the script you run when you use PHP Shell.
+
+ChangeLog
+  This file describe the changes I've made to PHP Shell. By reading it
+  you'll always know when I've added a new feature or made a bugfix,
+  and the nature of the feature/bugfix.
+
+README
+  (This file:-)
+
+INSTALL
+  Tells you how to install PHP Shell. It explains how you can
+  password-protect PHP Shell - this is very important, or else
+  everybody will be able so snoop into your files and perhaps also be
+  able to delete them! I've already seem one site that were using PHP
+  Shell without password-protection, I was able so quickly find their
+  config.inc.php-file from phpMyAdmin, and read the password to the
+  database! So please take the time to password-protect PHP Shell.
+
+sample.htaccess
+  To make it extra easy for you to password-protect PHP Shell, I've
+  include this template for a .htaccess-file. If you set this up
+  correctly Apache will prompt you for a username and password when
+  you try to access the directory containing PHP Shell.
+
+COPYING
+  Standard GNU disclamer

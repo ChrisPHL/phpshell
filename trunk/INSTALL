@@ -1,0 +1,51 @@
+Installation instructions for PHP Shell
+Copyright (C) 2000 Martin Geisler <gimpster@gimpster.com>
+Licensed under the GNU GPL. See the file COPYING for details.
+
+Getting the tarball
+-------------------
+You can always get the latest version from www.gimpster.com. 
+
+
+Installation
+------------
+Installation is easy: just untar the tarball into your webserver, and
+then type in the URL of the page phpshell.php. It should look
+something like this:
+http://your.server.com/phpshell/phpshell.php
+
+
+Password-protecting PHP Shell
+-----------------------------
+This will work, but i STRONGLY urge you to take a look at the file
+sample.htaccess. You will be using it to password-protect PHP Shell.
+To do so, first rename it to .htaccess, and then if you already have a
+file with usernames and passwords for Apache, just change the bit
+saying <path to auth-file> to the path of you file.
+
+If you don't have such a file, then creating one is easy. Type the
+following as root:
+
+$ htpasswd -c /home/httpd/auth_users <username>
+
+This will create the file /home/httpd/auth_users and promt for a
+password for the username supplied. If your Apache is installed
+somewhere else, then just adjust the path in both the command above
+and in the .htaccess-file.
+If you need to add extra usernames and passwords, then leave out the
+-c in the command above.
+It is important that you password-protect PHP Shell, or else everybody
+will have access to your webserver over the Internet. They will be
+able to erase your files, and perhaps even shutdown the webserver!
+So be careful with this and remember that you can always find the
+usual disclaimer in the file LICENSE. (This software is licensed under
+GPL, I'm not responsible if you blow things up, etc... :-)
+
+Bugs?
+-----
+If you find a bug or miss something in PHP Shell, please don't
+hesitate to mail me at <gimpster@gimpster.com>! It has only been
+tested for a very short time, so there might be some quirks in odd
+situations.
+
+Enjoy! - Martin Geisler <gimpster@gimpster.com>
