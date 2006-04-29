@@ -50,24 +50,25 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body>
-  <h1>Fatal Error!</h1>
-  <p><b>' . $errstr . '</b></p>
-  <p>in <b>' . $errfile . '</b>, line <b>' . $errline . '</b>.</p>
 
-  <hr>
+<h1>Fatal Error!</h1>
+<p><b>' . $errstr . '</b></p>
+<p>in <b>' . $errfile . '</b>, line <b>' . $errline . '</b>.</p>
 
-  <p>Please consult the <a href="README">README</a>, <a
-  href="INSTALL">INSTALL</a>, and <a href="SECURITY">SECURITY</a> files for
-  instruction on how to use PHP Shell.</p>
+<hr>
 
-  <hr>
+<p>Please consult the <a href="README">README</a>,
+<a href="INSTALL">INSTALL</a>, and <a href="SECURITY">SECURITY</a>
+files for instruction on how to use PHP Shell.</p>
 
-  <address>
-  Copyright &copy; 2000&ndash;2005, <a
-  href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the latest
-  version at <a
+<hr>
+
+<address>
+  Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
+  Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
+  This is PHP Shell @VERSION@, get the latest version at <a
   href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
-  </address>
+</address>
 
 </body>
 </html>');
@@ -403,9 +404,10 @@ instruction on how to use PHP Shell.</p>
 <hr>
 
 <address>
-By <a href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the
-latest version at <a
-href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+  Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
+  Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
+  This is PHP Shell @VERSION@, get the latest version at <a
+  href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
 </address>
 
 </body>

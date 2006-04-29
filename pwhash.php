@@ -93,9 +93,10 @@ if ($username == '' || $password == '') {
 <hr>
 
 <address>
-By <a href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>.  Get the
-latest version at <a
-href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+  Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
+  Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
+  This is PHP Shell @VERSION@, get the latest version at <a
+  href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
 </address>
 
 </body>
