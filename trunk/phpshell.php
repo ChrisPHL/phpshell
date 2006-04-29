@@ -1,13 +1,13 @@
 <?php
 
-define('PHPSHELL_VERSION', '1.5');
+define('PHPSHELL_VERSION', '1.6');
 
 /*
 
   **************************************************************
   *                        PHP Shell                           *
   **************************************************************
-  $Id: phpshell.php,v 1.15 2002/03/22 23:39:09 gimpster Exp gimpster $
+  $Id: phpshell.php,v 1.16 2002/03/23 10:24:52 gimpster Exp $
 
   An interactive PHP-page that will execute any command entered.
   See the files README and INSTALL or http://www.gimpster.com  for
@@ -133,8 +133,9 @@ closedir($dir_handle);
 <?php
 if (!empty($command)) {
   if ($stderr) {
-    $command .= " 1> /tmp/output.txt 2>&1; " .
-    "cat /tmp/output.txt; rm /tmp/output.txt";
+    $tmpfile = tempnam('/tmp', 'phpshell');
+    $command .= " 1> $tmpfile 2>&1; " .
+    "cat $tmpfile; rm $tmpfile";
   } else if ($command == 'ls') {
     /* ls looks much better with ' -F', IMHO. */
     $command .= ' -F';
