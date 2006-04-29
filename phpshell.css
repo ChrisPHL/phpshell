@@ -1,0 +1,20 @@
+/* Stylesheet for PhpShell. */
+
+body {
+  font-family: sans-serif;
+  color: black;
+  background: white;
+}
+
+h1 {
+  color: red;
+  background: white;
+}
+
+img {
+  border: 0;
+}
+
+legend {
+  font-weight: bold;
+}

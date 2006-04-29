@@ -1,3 +1,41 @@
+2003-04-01  Martin Geisler  <gimpster@gimpster.com>
+
+	* INSTALL 1.4:
+	New instructions on how to change the username and password.
+
+	* README 1.10:
+	Updated to be in sync with new instructions on how the password
+	protection works.
+
+	* phpshell.css 1.1: New file.
+
+	* phpshell.php 1.23:
+	Updated to use XHTML 1.0 Strict and the $_* variables in PHP
+	4.1.0. This effectively breaks compatibility with earlier versions of
+	PHP. If you cannot upgrade your PHP installation (you really should
+	consider upgrading to get hold of the latest security and bug fixes)
+	when just use PhpShell version 1.7 --- there's no new functionality in
+	this release.
+
+	* COPYING 1.1: New file.
+
+	* phpshell.php 1.22: Changed PHP Shell into PhpShell.
+
+	* phpshell.php 1.21: Added HTTP basic authentication to the script.
+
+	* .htaccess 1.2:
+	The .htaccess file will now prevent people from using phpshell.php on
+	new installations before they have either deleted it or changed the
+	path to the .htpasswd file.
+
+	* AUTHORS 1.5: Moved Jeremy Miller <JMiller@marketaxess.com>.
+
+	* phpshell.php 1.20: Updated version.
+
+	* AUTHORS 1.4, phpshell.php 1.19:
+	Applied patch from Michael Zech <keldrin@web.de> that made the
+	stderr-checkbox remember it's state.
+
 2002-09-18  Martin Geisler  <gimpster@gimpster.com>
 
 	* phpshell.php 1.18:
@@ -84,7 +122,7 @@
 
 	* INSTALL 1.2: Made BUGS lowercase.
 
-	* sample.htaccess 1.1, INSTALL 1.1, README 1.1: New file.
+	* .htaccess 1.1, INSTALL 1.1, README 1.1: New file.
 
 	* phpshell.php 1.7:
 	Removed 'Martin Geisler' from the title, putting my name on the bottom

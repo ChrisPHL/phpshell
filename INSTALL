@@ -1,58 +1,53 @@
-Installation instructions for PHP Shell
-Copyright (C) 2000-2002 Martin Geisler <gimpster@gimpster.com>
-Licensed under the GNU GPL. See the file COPYING for details.
+Installation instructions for PhpShell 1.8
+Copyright (C) 2000-2003 Martin Geisler <gimpster@gimpster.com>
+Licensed under the GNU GPL.  See the file COPYING for details.
 
 
 Getting the tarball
 -------------------
 You can always get the latest version from my homepage:
 
-  http://www.gimpster.com/php/phpshell/
+  http://www.gimpster.com/wiki/PhpShell
 
 
 Installation
 ------------
-Installation is easy: just untar the tarball into your webserver, and
-then type in the URL of the page phpshell.php. It should look
-something like this:
+Installation is easy: first unpack the tarball or zipfile into your
+webserver.  This will create a subdirectory called phpweather-1.8.
 
-  http://your.server.com/phpshell/phpshell.php
+If you're using PhpShell on an Apache webserver running PHP as a
+module, then PhpShell wont work until you've edited phpshell.php.  You
+can see this when you try and load the file phpshell.php from the
+directory just created --- you should get a prompt from your browser
+asking you to authenticate you.  In the default setup, no username or
+password will authenticate you, this what you'll have to change next.
 
-Please note, that PHP Shell doesn't work if PHP is running in Safe
-Mode. There is nothing I can do about this - Safe Mode was made to
-prevent scripts just like PHP Shell.
+In the phpshell.php file you'll find comments near the top that
+explains how to enable access for a username with a password. In
+short, you'll simply add the pair as an entry in the $passwd array
+like this:
+
+  $passwd = array('username' => 'password');
+
+It is important that you password-protect PhpShell with a good
+password.  If someone is able to guess your password, then they'll
+have access to your webserver over the Internet, and they might be
+able to erase your files, and perhaps even shutdown the webserver!  So
+be careful with this and remember that you can always find the usual
+disclaimer in the file LICENSE.  (This software is licensed under GPL,
+I'm not responsible if you blow things up, etc... :-)
 
 
-Password-protecting PHP Shell
------------------------------
-This will work, but i STRONGLY urge you to take a look at the file
-sample.htaccess. You will be using it to password-protect PHP Shell.
-To do so, first rename it to .htaccess, and then if you already have a
-file with usernames and passwords for Apache, just change the bit
-saying <path to auth-file> to the path of you file.
-
-If you don't have such a file, then creating one is easy. Type the
-following as root:
-
-  $ htpasswd -c /home/httpd/auth_users <username>
-
-This will create the file /home/httpd/auth_users and promt for a
-password for the username supplied. If your Apache is installed
-somewhere else, then just adjust the path in both the command above
-and in the .htaccess-file.
-If you need to add extra usernames and passwords, then leave out the
--c in the command above.
-It is important that you password-protect PHP Shell, or else everybody
-will have access to your webserver over the Internet. They will be
-able to erase your files, and perhaps even shutdown the webserver!
-So be careful with this and remember that you can always find the
-usual disclaimer in the file LICENSE. (This software is licensed under
-GPL, I'm not responsible if you blow things up, etc... :-)
+Safe Mode
+---------
+PhpShell doesn't work if PHP is running in Safe Mode.  There is
+nothing I can do about this --- Safe Mode was made to prevent scripts
+just like PhpShell.
 
 
 Bugs?
 -----
-If you find a bug or miss something in PHP Shell, please don't
-hesitate to mail me at <gimpster@gimpster.com>!
+If you find a bug or miss something in PhpShell, please don't hesitate
+to mail me at <gimpster@gimpster.com>!
 
 Enjoy! - Martin Geisler <gimpster@gimpster.com>

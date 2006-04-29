@@ -11,3 +11,14 @@ Robert Niess <sturm@i-st.net>
 
 Gerry Calderhead <caldergf@everythingsucks.co.uk>
   Patch for PHP 4.2.0 where register_globals are turned off.
+
+Jeremy Miller <JMiller@marketaxess.com>
+  Suggested that one could use Sudo from
+
+    http://www.courtesan.com/sudo/
+
+  to let PhpShell execute code with different privileges than the
+  webserver.
+
+Michael Zech <keldrin@web.de>
+  Patch to make the stderr-checkbox remember it's state.
