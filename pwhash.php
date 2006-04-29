@@ -5,15 +5,16 @@
  * Licensed under the GNU GPL.  See the file COPYING for details.
  */
 
+
 function stripslashes_deep($value) {
-    if (is_array($value))
-        return array_map('stripslashes_deep', $value);
-    else
-        return stripslashes($value);
+  if (is_array($value))
+    return array_map('stripslashes_deep', $value);
+  else
+    return stripslashes($value);
 }
 
 if (get_magic_quotes_gpc())
-    $_POST = stripslashes_deep($_POST);
+  $_POST = stripslashes_deep($_POST);
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
@@ -51,12 +52,12 @@ if ($username == '' || $password == '') {
   echo "  <p><i>Enter a username and a password and update.</i></p>\n";
 } else {
 
-    $u = strtolower($username);
+  $u = strtolower($username);
 
-    if (preg_match('/[[ |&~!()]/', $u) || $u == 'null' ||
-        $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false') {
+  if (preg_match('/[[ |&~!()]/', $u) || $u == 'null' ||
+      $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false') {
 
-        echo '  <p class="error">Your username cannot contain any of the following reserved
+    echo '  <p class="error">Your username cannot contain any of the following reserved
   word: "<tt>null</tt>", "<tt>yes</tt>", "<tt>no</tt>", "<tt>true</tt>", or
   "<tt>false</tt>".  The following characters are also prohibited:
   "<tt>&nbsp;</tt>" (space), "<tt>[</tt>" (left bracket), "<tt>|</tt>" (pipe),
@@ -64,21 +65,21 @@ if ($username == '' || $password == '') {
   mark), "<tt>(</tt>" (left parenthesis), or "<tt>)</tt>" (right
   parenthesis).</p>' . "\n";
 
-        echo '  <p>Please choose another username and try again.</p>' . "\n";
+    echo '  <p>Please choose another username and try again.</p>' . "\n";
 
-    } else {
-        echo "  <p>Write the following line into <tt>config.php</tt> " .
-            "in the <tt>users</tt> section:</p>\n";
+  } else {
+    echo "  <p>Write the following line into <tt>config.php</tt> " .
+      "in the <tt>users</tt> section:</p>\n";
 
-        $fkt = 'md5'; // Change to sha1 is you feel like it...
-        $salt = dechex(mt_rand());
+    $fkt = 'md5'; // Change to sha1 is you feel like it...
+    $salt = dechex(mt_rand());
 
-        $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
+    $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
 
-        echo "<pre>\n";
-        echo htmlentities(str_pad($username, 8) . ' = "' . $hash . '"') . "\n";
-        echo "</pre>\n";
-    }
+    echo "<pre>\n";
+    echo htmlentities(str_pad($username, 8) . ' = "' . $hash . '"') . "\n";
+    echo "</pre>\n";
+  }
 }
 ?>
 
@@ -92,8 +93,9 @@ if ($username == '' || $password == '') {
 <hr>
 
 <address>
-Copyright &copy; 2005, <a href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the
-latest version at <a href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+By <a href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>.  Get the
+latest version at <a
+href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
 </address>
 
 </body>
