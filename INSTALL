@@ -1,76 +1,96 @@
-Installation instructions for PhpShell 2.0
-Copyright (C) 2000-2004 Martin Geisler <gimpster@gimpster.com>
+INSTALL file for PHP Shell 2.1
+Copyright (C) 2000-2005 Martin Geisler <mgeisler@mgeisler.net>
 Licensed under the GNU GPL.  See the file COPYING for details.
 
 
-Getting the Tarball
--------------------
-You can always get the latest version of PhpShell from my homepage:
+Downloading PHP Shell
+=====================
 
-  http://www.gimpster.com/wiki/PhpShell
+You can always get the latest version of PHP Shell from my homepage:
+
+  http://mgeisler.net/php-shell/
+
 
 
 Installation
-------------
-Installation is easy: first unpack the tarball or zipfile downloaded
-from the above website into your webserver.  This will create a
-subdirectory called phpweather-2.0 for PhpShell version 2.0.
+============
 
-If you're using PhpShell on an Apache webserver running PHP as a
-module, then PhpShell wont work until you've edited phpshell.php.  You
-can see this when you try and load the file phpshell.php from the
-directory just created --- you should get a prompt from your browser
-asking you to authenticate you.  In the default setup, no username or
-password will authenticate you, this what you'll have to change next.
+Installation is easy: first unpack the tarball or zipfile downloaded from the
+above website into your webserver.  This will create a subdirectory called
+phpweather-2.1 for PHP Shell version 2.1.
 
-In the phpshell.php file you'll find comments near the top that
-explains how to enable access for a username with a password. In
-short, you'll simply add the pair as an entry in the $passwd array
-like this:
+Try loading the file ``phpshell.php`` in your browser and check that you are
+served a page that asks you to authenticate yourself with a username and a
+password.  If you do not see such a page, then please check that you have
+entered the URL correctly and that PHP is working on your server.
 
-  $passwd = array('username' => 'password');
 
-This can be expanded to multiple users with their own passwords in a
-very simple way:
 
-  $passwd = array('username_1' => 'password_1',
-                  'username_2' => 'password_2',
-                  // ...
-                  'username_n' => 'password_n');
+Configuration
+=============
 
-It is important that you password-protect PhpShell with a good
-password.  If someone is able to guess your password, then they'll
-have access to your webserver over the Internet, and they might be
-able to erase your files, and perhaps even shutdown the webserver!  So
-be careful with this and remember that you can always find the usual
-disclaimer in the file LICENSE.
+All configuration happens in the ``config.php`` file.  This is an ini-file
+dispite its name.  Ini-files consist of a number of sections, each containing
+a number of 'key = "value"' pairs.  PHP Shell has tree sections: '[users]' for
+configuring usernames and passwords, '[aliases]' for configuring shell
+aliases, and '[settings]' for general settings.
+
+
+Setting Usernames and Passwords
+-------------------------------
+
+As a security precaution PHP Shell has no default username and password
+(people often forget to change them...).  To add the user "alice" with
+password "secret" you simply add
+
+  [users]
+  alice = "secret"
+
+to the file.  Note that you can add as many users as you want by simply adding
+more lines like this.
+
+This system works, but there is a better way --- a way so that the password
+does not appear in clear text in the file.  For that you use the supplied
+script ``pwhash.php`` to generate a hashed password.  Please see the
+instructions given in ``pwhash.php``.
+
+With the above example the result could look like
+
+  [users]
+  alice    = "md5:7ea3b59e:eb271c4459253eaa163fcac2a119f225"
+
+You will not get exactly the same line if you try it out, this is a feature of
+the system which means that both "alice" and "bob" could have "secret" as
+their password, and you would not be able to tell from just looking at
+``config.php``.
 
 
 Shell Aliases
 -------------
 
-As in a normal shell, PhpShell supports a simple form of aliases.
-Simply edit the $aliases array at the top of phpshell.php.  The keys
-in the array are substituted for their corresponding values before the
-commands are executed --- a couple of convenient aliases are already
-defined:
+As in a normal shell, PHP Shell supports alias expansion, albeit in a simple
+form.  Aliases are defined by 'key = "value"' pairs in the '[aliases]'
+section.  The "key" will be matched against the first token of the command
+line and substituted with the "value" given.
 
-  $aliases = array('ls' => 'ls -CvhF',
-                   'll' => 'ls -lvhF');
+Two convenient aliases are already defined:
 
-
-Safe Mode
----------
-PhpShell doesn't work if PHP is running in Safe Mode.  There is
-nothing I can do about this --- Safe Mode was made to prevent scripts
-just like PhpShell.  So if you're worried that people will be able to
-destroy your website using a tool like PhpShell, then tell your
-provider to enable Safe Mode as this makes PHP much less evil.
+  [aliases]
+  ls = "ls -CvhF"
+  ll = "ls -lvhF"
 
 
-Bugs?
------
-If you find a bug or miss something in PhpShell, please don't hesitate
-to mail me at <gimpster@gimpster.com>!
+General Settings
+----------------
 
-Enjoy! - Martin Geisler <gimpster@gimpster.com>
+PHP has just one other setting right now --- the home directory.  Change this
+in the '[settings]' section.
+
+
+
+Bugs?  Comments?
+================
+
+If you find a bug or miss something in PHP Shell, please don't hesitate to
+mail me at <mgeisler@mgeisler.net>!  Or you could drop by and leave a comment
+at http://mgeisler.net/php-shell/.
