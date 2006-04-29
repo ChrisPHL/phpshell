@@ -1,5 +1,5 @@
-INSTALL file for PHP Shell 2.1
-Copyright (C) 2000-2005 Martin Geisler <mgeisler@mgeisler.net>
+INSTALL file for PHP Shell @VERSION@
+Copyright (C) 2000-2006 Martin Geisler <mgeisler@mgeisler.net>
 Licensed under the GNU GPL.  See the file COPYING for details.
 
 
@@ -17,7 +17,7 @@ Installation
 
 Installation is easy: first unpack the tarball or zipfile downloaded from the
 above website into your webserver.  This will create a subdirectory called
-phpweather-2.1 for PHP Shell version 2.1.
+phpweather-@VERSION@ for PHP Shell version @VERSION@.
 
 Try loading the file ``phpshell.php`` in your browser and check that you are
 served a page that asks you to authenticate yourself with a username and a
