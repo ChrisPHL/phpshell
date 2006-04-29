@@ -1,19 +1,20 @@
-Installation instructions for PhpShell 1.9
-Copyright (C) 2000-2003 Martin Geisler <gimpster@gimpster.com>
+Installation instructions for PhpShell 2.0
+Copyright (C) 2000-2004 Martin Geisler <gimpster@gimpster.com>
 Licensed under the GNU GPL.  See the file COPYING for details.
 
 
-Getting the tarball
+Getting the Tarball
 -------------------
-You can always get the latest version from my homepage:
+You can always get the latest version of PhpShell from my homepage:
 
   http://www.gimpster.com/wiki/PhpShell
 
 
 Installation
 ------------
-Installation is easy: first unpack the tarball or zipfile into your
-webserver.  This will create a subdirectory called phpweather-1.9.
+Installation is easy: first unpack the tarball or zipfile downloaded
+from the above website into your webserver.  This will create a
+subdirectory called phpweather-2.0 for PhpShell version 2.0.
 
 If you're using PhpShell on an Apache webserver running PHP as a
 module, then PhpShell wont work until you've edited phpshell.php.  You
@@ -29,20 +30,42 @@ like this:
 
   $passwd = array('username' => 'password');
 
+This can be expanded to multiple users with their own passwords in a
+very simple way:
+
+  $passwd = array('username_1' => 'password_1',
+                  'username_2' => 'password_2',
+                  // ...
+                  'username_n' => 'password_n');
+
 It is important that you password-protect PhpShell with a good
 password.  If someone is able to guess your password, then they'll
 have access to your webserver over the Internet, and they might be
 able to erase your files, and perhaps even shutdown the webserver!  So
 be careful with this and remember that you can always find the usual
-disclaimer in the file LICENSE.  (This software is licensed under GPL,
-I'm not responsible if you blow things up, etc... :-)
+disclaimer in the file LICENSE.
+
+
+Shell Aliases
+-------------
+
+As in a normal shell, PhpShell supports a simple form of aliases.
+Simply edit the $aliases array at the top of phpshell.php.  The keys
+in the array are substituted for their corresponding values before the
+commands are executed --- a couple of convenient aliases are already
+defined:
+
+  $aliases = array('ls' => 'ls -CvhF',
+                   'll' => 'ls -lvhF');
 
 
 Safe Mode
 ---------
 PhpShell doesn't work if PHP is running in Safe Mode.  There is
 nothing I can do about this --- Safe Mode was made to prevent scripts
-just like PhpShell.
+just like PhpShell.  So if you're worried that people will be able to
+destroy your website using a tool like PhpShell, then tell your
+provider to enable Safe Mode as this makes PHP much less evil.
 
 
 Bugs?
