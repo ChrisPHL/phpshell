@@ -1,8 +1,8 @@
 ; <?php die('Forbidden'); ?>
 ; Do not remove the above line, it prevents this file from being downloaded.
 ;
-; config.php file for PHP Shell 2.1
-; Copyright (C) 2005 Martin Geisler <mgeisler@mgeisler.net>
+; config.php file for PHP Shell @VERSION@
+; Copyright (C) 2005, 2006 Martin Geisler <mgeisler@mgeisler.net>
 ; Licensed under the GNU GPL.  See the file COPYING for details.
 
 ; This ini-file has three parts:

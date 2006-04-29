@@ -1,7 +1,7 @@
 <?php
 /*
- * pwhash.php file for PHP Shell 2.1
- * Copyright (C) 2005 Martin Geisler <mgeisler@mgeisler.net>
+ * pwhash.php file for PHP Shell @VERSION@
+ * Copyright (C) 2005, 2006 Martin Geisler <mgeisler@mgeisler.net>
  * Licensed under the GNU GPL.  See the file COPYING for details.
  */
 
@@ -23,13 +23,13 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>Password Hasher for PHP Shell 2.1</title>
+  <title>Password Hasher for PHP Shell @VERSION@</title>
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 
 <body>
 
-<h1>Password Hasher for PHP Shell 2.1</h1>
+<h1>Password Hasher for PHP Shell @VERSION@</h1>
 
 <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST">
 

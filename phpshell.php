@@ -3,14 +3,14 @@
 /*
 
   **************************************************************
-  *                     PHP Shell 2.1                          *
+  *                     PHP Shell @VERSION@                          *
   **************************************************************
 
   PHP Shell is an interactive PHP script that will execute any command
   entered.  See the files README, INSTALL, and SECURITY or
   http://mgeisler.net/php-shell/ for further information.
 
-  Copyright (C) 2000-2005 Martin Geisler <mgeisler@mgeisler.net>
+  Copyright (C) 2000-2006 Martin Geisler <mgeisler@mgeisler.net>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>PHP Shell 2.1</title>
+  <title>PHP Shell @VERSION@</title>
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body>
@@ -270,7 +270,7 @@ if ($_SESSION['authenticated']) {
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>PHP Shell 2.1</title>
+  <title>PHP Shell @VERSION@</title>
   <link rel="stylesheet" href="style.css" type="text/css">
 
   <script type="text/javascript">
@@ -315,7 +315,7 @@ if ($_SESSION['authenticated']) {
 
 <body onload="init()">
 
-<h1>PHP Shell 2.1</h1>
+<h1>PHP Shell @VERSION@</h1>
 
 <form name="shell" action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
 
