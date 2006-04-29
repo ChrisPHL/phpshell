@@ -5,3 +5,6 @@ Thanks goes to all these persons who have helped:
 richard@joffray.com
   Fixed a problem the list of directories, if one accessed the
   root-directory.
+
+Robert Niess <sturm@i-st.net>
+  Made me aware of a security hole in the handling of stderr-trapping.
