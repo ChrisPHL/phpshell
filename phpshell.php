@@ -1,17 +1,18 @@
 <?php
 
-define('PHPSHELL_VERSION', '1.6');
+define('PHPSHELL_VERSION', '1.7');
 
 /*
 
   **************************************************************
   *                        PHP Shell                           *
   **************************************************************
-  $Id: phpshell.php,v 1.16 2002/03/23 10:24:52 gimpster Exp $
+  $Id: phpshell.php,v 1.18 2002/09/18 15:49:54 gimpster Exp $
 
-  An interactive PHP-page that will execute any command entered.
-  See the files README and INSTALL or http://www.gimpster.com  for
-  further information. 
+  PHP Shell is aninteractive PHP-page that will execute any command
+  entered. See the files README and INSTALL or http://www.gimpster.com
+  for further information.
+
   Copyright (C) 2000-2002 Martin Geisler <gimpster@gimpster.com>
 
   This program is free software; you can redistribute it and/or
@@ -40,15 +41,29 @@ define('PHPSHELL_VERSION', '1.6');
 <h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
 <?php
+
+if (ini_get('register_globals') != '1') {
+  /* We'll register the variables as globals: */
+  if (!empty($HTTP_POST_VARS))
+    extract($HTTP_POST_VARS);
+  
+  if (!empty($HTTP_GET_VARS))
+    extract($HTTP_GET_VARS);
+
+  if (!empty($HTTP_SERVER_VARS))
+    extract($HTTP_SERVER_VARS);
+}
+
 /* First we check if there has been asked for a working directory. */
 if (!empty($work_dir)) {
   /* A workdir has been asked for */
   if (!empty($command)) {
     if (ereg('^[[:blank:]]*cd[[:blank:]]+([^;]+)$', $command, $regs)) {
+      /* We try and match a cd command. */
       if ($regs[1][0] == '/') {
-        $new_dir = $regs[1];
+        $new_dir = $regs[1]; // 'cd /something/...'
       } else {
-        $new_dir = $work_dir . '/' . $regs[1];
+        $new_dir = $work_dir . '/' . $regs[1]; // 'cd somedir/...'
       }
       if (file_exists($new_dir) && is_dir($new_dir)) {
         $work_dir = $new_dir;
@@ -58,31 +73,33 @@ if (!empty($work_dir)) {
   }
 }
 
-/* we chdir to that dir. */
 if (file_exists($work_dir) && is_dir($work_dir)) {
+  /* We change directory to that dir: */
   chdir($work_dir);
-  $work_dir = exec("pwd");
-} else {
-  /* No work_dir - we chdir to $DOCUMENT_ROOT */
-  chdir($DOCUMENT_ROOT);
-  $work_dir = $DOCUMENT_ROOT;
 }
+
+/* We now update $work_dir to avoid things like '/foo/../bar': */
+$work_dir = exec('pwd');
+
 ?>
 
 <form name="myform" action="<?php echo $PHP_SELF ?>" method="post">
 <p>Current working directory: <b>
 <?php
-$work_dir_splitted = explode("/", substr($work_dir, 1));
-echo "<a href=\"$PHP_SELF?work_dir=" . urlencode($url) . "/&command=" . urlencode($command) . "\">Root</a>/";
-if ($work_dir_splitted[0] == "") {
-    $work_dir = "/";  /* Root directory. */
-} else {
+
+$work_dir_splitted = explode('/', substr($work_dir, 1));
+
+echo '<a href="' . $PHP_SELF . '?work_dir=/">Root</a>/';
+
+if (!empty($work_dir_splitted[0])) {
+  $path = '';
   for ($i = 0; $i < count($work_dir_splitted); $i++) {
-    /*  echo "i = $i";*/
-    $url .= "/".$work_dir_splitted[$i];
-    echo "<a href=\"$PHP_SELF?work_dir=" . urlencode($url) . "&command=" . urlencode($command) . "\">$work_dir_splitted[$i]</a>/";
+    $path .= '/' . $work_dir_splitted[$i];
+    printf('<a href="%s?work_dir=%s">%s</a>/',
+           $PHP_SELF, urlencode($path), $work_dir_splitted[$i]);
   }
 }
+
 ?></b></p>
 <p>Choose new working directory:
 <select name="work_dir" onChange="this.form.submit()">
@@ -92,15 +109,15 @@ $dir_handle = opendir($work_dir);
 /* Run through all the files and directories to find the dirs. */
 while ($dir = readdir($dir_handle)) {
   if (is_dir($dir)) {
-    if ($dir == ".") {
+    if ($dir == '.') {
       echo "<option value=\"$work_dir\" selected>Current Directory</option>\n";
-    } elseif ($dir == "..") {
+    } elseif ($dir == '..') {
       /* We have found the parent dir. We must be carefull if the parent 
 	 directory is the root directory (/). */
       if (strlen($work_dir) == 1) {
 	/* work_dir is only 1 charecter - it can only be / There's no
           parent directory then. */
-      } elseif (strrpos($work_dir, "/") == 0) {
+      } elseif (strrpos($work_dir, '/') == 0) {
 	/* The last / in work_dir were the first charecter.
 	   This means that we have a top-level directory
 	   eg. /bin or /home etc... */
@@ -111,7 +128,7 @@ while ($dir = readdir($dir_handle)) {
       echo "<option value=\"". strrev(substr(strstr(strrev($work_dir), "/"), 1)) ."\">Parent Directory</option>\n";
       }
     } else {
-      if ($work_dir == "/") {
+      if ($work_dir == '/') {
 	echo "<option value=\"$work_dir$dir\">$dir</option>\n";
       } else {
 	echo "<option value=\"$work_dir/$dir\">$dir</option>\n";
@@ -120,6 +137,7 @@ while ($dir = readdir($dir_handle)) {
   }
 }
 closedir($dir_handle);
+
 ?>
 
 </select></p>
@@ -152,7 +170,7 @@ document.forms[0].command.focus();
 </script>
 
 <hr>
-<i>Copyright &copy; 2000-2002, <a
+<i>Copyright &copy; 2000&ndash;2002, <a
 href="mailto:gimpster@gimpster.com">Martin Geisler</a>. Get the latest
 version at <a href="http://www.gimpster.com">www.gimpster.com</a>.</i>
 </body>

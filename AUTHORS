@@ -8,3 +8,6 @@ richard@joffray.com
 
 Robert Niess <sturm@i-st.net>
   Made me aware of a security hole in the handling of stderr-trapping.
+
+Gerry Calderhead <caldergf@everythingsucks.co.uk>
+  Patch for PHP 4.2.0 where register_globals are turned off.
