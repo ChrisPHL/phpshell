@@ -126,7 +126,8 @@ if (empty($ini['settings']))
 
 /* Default settings --- these settings should always be set to
  * something. */
-$default_settings = array('home-directory'   => '.');
+$default_settings = array('home-directory'   => '.',
+                          'safe-mode-warning' => true);
 
 /* Merge settings. */
 $ini['settings'] = array_merge($default_settings, $ini['settings']);
@@ -356,6 +357,26 @@ if (!$_SESSION['authenticated']) {
 </fieldset>
 
 <?php } else { /* Authenticated. */ ?>
+
+<?php if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
+
+<div class="warning">
+  <p><b>Warning:</b> PHP is running in <a
+  href="http://php.net/features.safe-mode">Safe Mode</a>.  This means
+  that PHP Shell is likely to <b>fail</b> in strange ways.  See the <a
+  href="SECURITY">SECURITY</a> file for some background information
+  about Safe Mode and its effects on PHP Shell.</p>
+  
+  <p>Please note that there is nothing that PHP Shell can do to
+  deactivate Safe Mode.  You will have to talk to your system
+  administrator about it.</p>
+
+  <p>PHP Shell will try its best to carry on despite Safe Mode.  You
+  can disable this warning by setting <code>safe-mode-warning</code>
+  to <code>false</code> in the configuration file.</p>
+</div>
+
+<?php } /* Safe mode. */ ?>
 
 <fieldset>
   <legend>Current Working Directory: <code><?php

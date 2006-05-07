@@ -60,3 +60,10 @@ ll = "ls -lvhF"
 ; directory.
 
 home-directory = "."
+
+; Safe Mode warning.  PHP Shell will normally display a big, fat
+; warning if it detects that PHP is running in Safe Mode.  If you find
+; that PHP Shell works anyway, then set this to false to get rid of
+; the warning.
+
+safe-mode-warning = true
