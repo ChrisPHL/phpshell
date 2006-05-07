@@ -58,3 +58,10 @@ fieldset {
 .error {
   color: red;
 }
+
+div.warning {
+  background-color: rgb(255, 150, 150);
+  border: medium solid rgb(255, 60, 60);
+  padding: 0.5em;
+  margin: 0.25em;
+}
