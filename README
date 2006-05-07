@@ -133,6 +133,10 @@ The tarball/zipfile contains these files:
 phpshell.php
   This is the script you run when you use PHP Shell.
 
+pwhash.php
+  A utility used to generate a hashed password.  Please read INSTALL
+  for more information.  This file poses no security risk.
+
 ChangeLog
   This file describe the changes I've made to PHP Shell.  By reading
   it you'll always know when I've added a new feature or made a
