@@ -93,6 +93,18 @@ Change this in the '[settings]' section.
 Bugs?  Comments?
 ================
 
-If you find a bug or miss something in PHP Shell, please don't
-hesitate to mail me at <mgeisler@mgeisler.net>!  Or you could drop by
-and leave a comment at http://mgeisler.net/php-shell/.
+If you find a bug or miss something in PHP Shell, please take a look
+at the Tracker System at SourceForge:
+
+  http://sourceforge.net/tracker/?group_id=156638
+
+There you will find trackers for Bugs, Patches, and Feature Requests.
+You are invited to add items to these so that they wont get lost.
+
+You can also email the development list, found at:
+
+  https://lists.sourceforge.net/lists/listinfo/phpshell-devel
+
+This list is for discussion about all things PHP Shell and it is a
+good place to discuss a feature or bug before adding it to one of the
+SourceForge trackers.
