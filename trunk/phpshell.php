@@ -6,6 +6,8 @@
   *                     PHP Shell @VERSION@                          *
   **************************************************************
 
+  $Rev$ $Date$
+
   PHP Shell is an interactive PHP script that will execute any command
   entered.  See the files README, INSTALL, and SECURITY or
   http://mgeisler.net/php-shell/ for further information.

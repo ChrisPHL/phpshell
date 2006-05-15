@@ -3,6 +3,8 @@
  * pwhash.php file for PHP Shell @VERSION@
  * Copyright (C) 2005, 2006 Martin Geisler <mgeisler@mgeisler.net>
  * Licensed under the GNU GPL.  See the file COPYING for details.
+ *
+ * $Rev$ $Date$
  */
 
 
