@@ -30,8 +30,8 @@
   02110-1301 USA.
 */
 
-/* There are no user-configurable settings in this file anymore,
- * please see config.php instead. */
+/* There are no user-configurable settings in this file, please see
+ * config.php instead. */
 
 
 /* This error handler will turn all notices, warnings, and errors into
@@ -311,7 +311,7 @@ if ($_SESSION['authenticated']) {
     document.shell.command.focus();
   }
 
-  <?php } else { ?>
+  <?php } else { /* if not authenticated */ ?>
 
   function init() {
     document.shell.username.focus();
@@ -407,7 +407,7 @@ echo rtrim($padding . $_SESSION['output']);
   name="columns" size="2" maxlength="3" value="<?php echo $columns
   ?>"></span>
   
-<input type="submit" value="Execute Command">
+  <input type="submit" value="Execute Command">
   <input type="submit" name="logout" value="Logout">
 </p>
 
@@ -416,7 +416,6 @@ echo rtrim($padding . $_SESSION['output']);
 <?php } ?>
 
 </form>
-
 
 <hr>
 
