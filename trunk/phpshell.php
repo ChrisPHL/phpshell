@@ -10,9 +10,9 @@
 
   PHP Shell is an interactive PHP script that will execute any command
   entered.  See the files README, INSTALL, and SECURITY or
-  http://mgeisler.net/php-shell/ for further information.
+  http://phpshell.sf.net/ for further information.
 
-  Copyright (C) 2000-2006 Martin Geisler <mgeisler@mgeisler.net>
+  Copyright (C) 2000-2006, 2008 Martin Geisler <mgeisler@mgeisler.net>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -69,7 +69,7 @@ files for instruction on how to use PHP Shell.</p>
   Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
   Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
   This is PHP Shell @VERSION@, get the latest version at <a
-  href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+  href="http://phpshell.sourceforge.net/">phpshell.sf.net</a>.
 </address>
 
 </body>
@@ -429,7 +429,7 @@ instruction on how to use PHP Shell.</p>
   Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
   Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
   This is PHP Shell @VERSION@, get the latest version at <a
-  href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+  href="http://phpshell.sourceforge.net/">phpshell.sf.net</a>.
 </address>
 
 </body>
