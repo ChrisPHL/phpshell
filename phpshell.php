@@ -184,9 +184,9 @@ if ($_SESSION['authenticated']) {
     $_SESSION['output'] .= '$ ' . $command . "\n";
 
     /* Initialize the current working directory. */
-    if (ereg('^[[:blank:]]*cd[[:blank:]]*$', $command)) {
+    if (preg_match('^[[:blank:]]*cd[[:blank:]]*$', $command)) {
       $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
-    } elseif (ereg('^[[:blank:]]*cd[[:blank:]]+([^;]+)$', $command, $regs)) {
+    } elseif (preg_match('^[[:blank:]]*cd[[:blank:]]+([^;]+)$', $command, $regs)) {
       /* The current command is a 'cd' command which we have to handle
        * as an internal shell command. */
 

@@ -1,3 +1,7 @@
+2010-01-15  Natan Bueno <natan.bueno@gmail.com>
+    * phpshell.php
+	Replaced deprecated function ereg by the function preg_match
+
 2005-12-27  Martin Geisler  <mgeisler@mgeisler.net>
 
 	* phpshell.php:
