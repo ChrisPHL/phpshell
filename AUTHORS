@@ -31,3 +31,9 @@ Michael Zech <keldrin@web.de>
 Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at>
   Multiple patches, including the sorting of directory entries in the
   drop down box.
+  
+Natan Bueno Ungethuem
+  Patch for PHP 5.X because the function ereg was deprecated
+  
+Tobias Unger
+  AddOn including an Editor ("vim") for PHP-Shell 2.1.
