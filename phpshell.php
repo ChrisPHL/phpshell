@@ -476,7 +476,7 @@ instruction on how to use PHP Shell.</p>
 Copyright &copy; 2000&ndash;2005, <a
 href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the
 latest version at <a
-href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
 
 </body>

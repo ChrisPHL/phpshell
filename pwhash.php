@@ -73,7 +73,7 @@ if ($username == '' || $password == '') {
     echo "  <p>Write the following line into <tt>config.php</tt> " .
       "in the <tt>users</tt> section:</p>\n";
 
-    $fkt = 'md5'; // Change to sha1 is you feel like it...
+    if ( function_exists('sha1') ) { $fkt = 'sha1' ; } else { $fkt = 'md5' ; } ;
     $salt = dechex(mt_rand());
 
     $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
@@ -95,10 +95,10 @@ if ($username == '' || $password == '') {
 <hr>
 
 <address>
-  Copyright © <a href="mailto:mgeisler@mgeisler.net">Martin
+  Copyright &copy; <a href="mailto:mgeisler@mgeisler.net">Martin
   Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
   This is PHP Shell @VERSION@, get the latest version at <a
-  href="http://phpshell.sourceforge.net/">phpshell.sf.net</a>.
+  href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
 
 </body>
