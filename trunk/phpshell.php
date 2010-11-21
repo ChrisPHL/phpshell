@@ -8,7 +8,7 @@
 
   PHP Shell is an interactive PHP script that will execute any command
   entered.  See the files README, INSTALL, and SECURITY or
-  http://mgeisler.net/php-shell/ for further information.
+  http://phpshell.sourceforge.net/ for further information.
 
   Copyright (C) 2000-2005 Martin Geisler <mgeisler@mgeisler.net>
 
@@ -33,6 +33,8 @@
  * config.php instead. */
 
 
+
+header("Content-Type: text/html; charset=utf-8");
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
@@ -66,7 +68,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
   Copyright &copy; 2000&ndash;2005, <a
   href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the latest
   version at <a
-  href="http://mgeisler.net/php-shell/">mgeisler.net/php-shell/</a>.
+  href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
 
 </body>
@@ -171,6 +173,16 @@ if ($_SESSION['authenticated']) {
         $_SESSION['history'] = array();
         $_SESSION['output'] = '';
     }
+    /* Clicked on one of the directory links in the working directory - ignore the command */
+    if (isset($_POST["levelup"])) {
+	$levelup = $_POST["levelup"] ;
+	while ($levelup > 0) {
+	    $command = '' ;
+	    $_SESSION['cwd'] = dirname($_SESSION['cwd']) ;
+	    $levelup -- ;
+	}
+    }
+
     /* Save content from 'editor' */
     if(isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
         $filetoedit_handle = fopen($_POST["filetoedit"], "w");
@@ -178,7 +190,6 @@ if ($_SESSION['authenticated']) {
 		fclose($filetoedit_handle);
     }
 
-  
     if (!empty($command)) {
         /* Save the command for late use in the JavaScript.  If the command is
          * already in the history, then the old entry is removed before the
@@ -353,6 +364,10 @@ if ($_SESSION['authenticated']) {
   }
 
   <?php } ?>
+  function levelup(d) {
+    document.shell.levelup.value=d ; 
+    document.shell.submit() ;
+  }
   </script>
 </head>
 
@@ -361,7 +376,7 @@ if ($_SESSION['authenticated']) {
 <h1>PHP Shell 2.1</h1>
 
 <form name="shell" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
-
+<div><input name="levelup" id="levelup" type="hidden"></div>
 <?php
 if (!$_SESSION['authenticated']) {
     /* Genereate a new nounce every time we preent the login page.  This binds
@@ -394,10 +409,14 @@ if (!$_SESSION['authenticated']) {
 </fieldset>
 
 <?php } else { /* Authenticated. */ ?>
-
 <fieldset>
   <legend>Current Working Directory: <code><?php
-     echo  htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8');
+     $parts = explode('/', $_SESSION['cwd']);
+     
+     for($i=1; $i<count($parts); $i=$i+1) {
+        echo "<a href=\"javascript:levelup(" . (count($parts)-$i) . ")\">/</a>" ;
+        echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8') ;
+     } 
     ?></code></legend>
 
     <?php if(! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
@@ -469,6 +488,7 @@ echo rtrim($padding . $_SESSION['output']);
 <p>Please consult the <a href="README">README</a>, <a
 href="INSTALL">INSTALL</a>, and <a href="SECURITY">SECURITY</a> files for
 instruction on how to use PHP Shell.</p>
+<p>If you have not created accounts for phpshell, please use <a href="pwhash.php">pwhash.php</a> to create secure passwords.</p>
 
 <hr>
 

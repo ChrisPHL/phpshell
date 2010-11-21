@@ -1,5 +1,8 @@
+2010-11-21  Wolfgang Dautermann
+    * One can navigate to higher level directories using hyperlinks.
+
 2010-11-05  Wolfgang Dautermann
-    * Use SHA1 password hashing if possible. Changed project links to http://phphell.sourceforge.net/
+    * Use SHA1 password hashing if possible. Changed project links to http://phpshell.sourceforge.net/
 
 2010-01-30  Natan Bueno <natan.bueno@gmail.com>
     * phpshell.php
