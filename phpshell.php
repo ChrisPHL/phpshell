@@ -35,6 +35,7 @@
 
 
 header("Content-Type: text/html; charset=utf-8");
+
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
@@ -49,6 +50,9 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
 <html>
 <head>
   <title>PHP Shell 2.1</title>
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="generator" content="phpshell">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body>
@@ -174,12 +178,22 @@ if ($_SESSION['authenticated']) {
         $_SESSION['output'] = '';
     }
     /* Clicked on one of the directory links in the working directory - ignore the command */
-    if (isset($_POST["levelup"])) {
-	$levelup = $_POST["levelup"] ;
+    if (isset($_POST['levelup'])) {
+	$levelup = $_POST['levelup'] ;
 	while ($levelup > 0) {
-	    $command = '' ;
+	    $command = '' ; /* ignore the command */
 	    $_SESSION['cwd'] = dirname($_SESSION['cwd']) ;
 	    $levelup -- ;
+	}
+    }
+    /* Selected a new subdirectory as working directory - ignore the command */
+    if (isset($_POST['changedirectory'])) {
+	$changedir= $_POST['changedirectory'];
+	if (strlen($changedir) > 0) {
+	    if (@chdir($_SESSION['cwd'] . '/' . $changedir)) {
+		$command = '' ; /* ignore the command */
+		$_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir) ;
+	    }
 	}
     }
 
@@ -319,6 +333,9 @@ if ($_SESSION['authenticated']) {
 <html>
 <head>
   <title>PHP Shell 2.1</title>
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="generator" content="phpshell">
   <link rel="stylesheet" href="style.css" type="text/css">
 
   <script type="text/javascript">
@@ -368,6 +385,10 @@ if ($_SESSION['authenticated']) {
     document.shell.levelup.value=d ; 
     document.shell.submit() ;
   }
+  function changesubdir(d) {
+    document.shell.changedirectory.value=document.shell.dirselected.value ; 
+    document.shell.submit() ;
+  }
   </script>
 </head>
 
@@ -377,6 +398,7 @@ if ($_SESSION['authenticated']) {
 
 <form name="shell" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
 <div><input name="levelup" id="levelup" type="hidden"></div>
+<div><input name="changedirectory" id="changedirectory" type="hidden"></div>
 <?php
 if (!$_SESSION['authenticated']) {
     /* Genereate a new nounce every time we preent the login page.  This binds
@@ -389,35 +411,54 @@ if (!$_SESSION['authenticated']) {
 
 <fieldset>
   <legend>Authentication</legend>
-
   <?php
   if (!empty($username))
-      echo '  <p class="error">Login failed, please try again:</p>' . "\n";
+      echo "  <p class=\"error\">Login failed, please try again:</p>\n";
   else
       echo "  <p>Please login:</p>\n";
   ?>
 
-  <p>Username: <input name="username" type="text" value="<?php echo $username
-  ?>"></p>
-
-  <p>Password: <input name="password" type="password"></p>
-
+  <label for="username">Username:</label>
+  <input name="username" id="username" type="text" value="<?php echo $username
+  ?>"><br>
+  <label for="password">Password:</label>
+  <input name="password" id="password" type="password">
   <p><input type="submit" value="Login"></p>
-
   <input name="nounce" type="hidden" value="<?php echo $_SESSION['nounce']; ?>">
 
 </fieldset>
 
 <?php } else { /* Authenticated. */ ?>
 <fieldset>
-  <legend>Current Working Directory: <code><?php
+  <legend><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
+<p>Current Working Directory:
+<span class="pwd"><?php
      $parts = explode('/', $_SESSION['cwd']);
      
      for($i=1; $i<count($parts); $i=$i+1) {
-        echo "<a href=\"javascript:levelup(" . (count($parts)-$i) . ")\">/</a>" ;
+        echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
         echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8') ;
      } 
-    ?></code></legend>
+    ?></span><?php
+/* Now we make a list of the directories. */
+$dir_handle = opendir($_SESSION['cwd']);
+/* We store the output so that we can sort it later: */
+$options = array();
+/* Run through all the files and directories to find the dirs. */
+while ($dir = readdir($dir_handle)) {
+    if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
+	  $options[$dir] = "<option value=\"/$dir\">$dir</option>";
+    }
+}
+closedir($dir_handle);
+if (count($options)>0) {
+    ksort($options);
+    echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
+    echo implode("\n", $options);
+    echo '</select>';
+}
+?>
+<br>
 
     <?php if(! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
 
@@ -475,13 +516,11 @@ echo rtrim($padding . $_SESSION['output']);
 
   <input type="submit" name="logout" value="Logout">
 </p>
-
 </fieldset>
 
 <?php } ?>
 
 </form>
-
 
 <hr>
 

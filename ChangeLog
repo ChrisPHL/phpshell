@@ -1,3 +1,6 @@
+2010-11-29  Wolfgang Dautermann
+    * Reimplemented the feature to change to subdirectorys using mouseclicks (was available in older version)
+
 2010-11-21  Wolfgang Dautermann
     * One can navigate to higher level directories using hyperlinks.
 

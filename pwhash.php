@@ -27,6 +27,9 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 <html>
 <head>
   <title>Password Hasher for PHP Shell @VERSION@</title>
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="generator" content="phpshell">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 

@@ -65,3 +65,11 @@ div.warning {
   padding: 0.5em;
   margin: 0.25em;
 }
+.pwd {
+  font-family: monospace;
+  padding: 0.5em;
+  margin: 0.25em;
+}
+a.pwd {
+  font-weight: bold;
+}
