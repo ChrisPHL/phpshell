@@ -10,7 +10,7 @@
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2005 Martin Geisler <mgeisler@mgeisler.net>
+  Copyright (C) 2000-2010 Martin Geisler <mgeisler@mgeisler.net>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -69,7 +69,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2005, <a
+  Copyright &copy; 2000&ndash;2010, <a
   href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
@@ -222,6 +222,13 @@ if ($_SESSION['authenticated']) {
         } elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
             /* The current command is a 'cd' command which we have to handle
              * as an internal shell command. */
+
+	    /* if the directory starts and ends with quotes ("), remove them -
+	       allows command like 'cd "abc def"' */
+	    if ((substr($regs[1],0,1) == '"') && (substr($regs[1],-1) =='"') ) {
+	      $regs[1] = substr($regs[1],1) ;
+	      $regs[1] = substr($regs[1],0,-1) ;
+	    }
 
             if ($regs[1]{0} == '/') {
                 /* Absolute path, we use it unchanged. */
@@ -532,7 +539,7 @@ instruction on how to use PHP Shell.</p>
 <hr>
 
 <address>
-Copyright &copy; 2000&ndash;2005, <a
+Copyright &copy; 2000&ndash;2010, <a
 href="mailto:mgeisler@mgeisler.net">Martin Geisler</a>. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
