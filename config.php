@@ -3,7 +3,7 @@
 ; being downloaded.
 ;
 ; config.php file for PHP Shell @VERSION@
-; Copyright (C) 2005, 2006 Martin Geisler <mgeisler@mgeisler.net>
+; Copyright (C) 2005-2010 Martin Geisler <mgeisler@mgeisler.net>
 ; Licensed under the GNU GPL.  See the file COPYING for details.
 
 ; This ini-file has three parts:
