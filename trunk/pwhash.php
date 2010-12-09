@@ -1,10 +1,9 @@
 <?php
 /*
  * pwhash.php file for PHP Shell @VERSION@
- * Copyright (C) 2005-2010 Martin Geisler <mgeisler@mgeisler.net>
+ * Copyright (C) 2005-2010 the Phpshell-team
  * Licensed under the GNU GPL.  See the file COPYING for details.
  *
- * $Rev$ $Date$
  */
 
 
@@ -98,8 +97,7 @@ if ($username == '' || $password == '') {
 <hr>
 
 <address>
-  Copyright &copy; <a href="mailto:mgeisler@mgeisler.net">Martin
-  Geisler</a> and others, please see <a href="AUTHORS">AUTHORS</a>.
+  Copyright &copy; the Phpshell-team, please see <a href="AUTHORS">AUTHORS</a>.
   This is PHP Shell @VERSION@, get the latest version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
