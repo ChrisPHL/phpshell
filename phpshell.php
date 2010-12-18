@@ -32,14 +32,12 @@
 /* There are no user-configurable settings in this file anymore, please see
  * config.php instead. */
 
-
-
 header("Content-Type: text/html; charset=utf-8");
 
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
-    /* The @-opertor (used with chdir() below) temporarely makes
+    /* The @-operator (used with chdir() below) temporarely makes
      * error_reporting() return zero, and we don't want to die in that case.
      * We do note the error in the output, though. */
     if (error_reporting() == 0) {
@@ -266,14 +264,16 @@ if ($_SESSION['authenticated']) {
                $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
         
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]+([^;]+)$/', $command, $regs)) {
-            /* This is a tiny editor whitch you can start calling 'editor file'*/
-
-            if(is_file(realpath($_SESSION['cwd']."/".$regs[1])) || ! file_exists(realpath($_SESSION['cwd']."/".$regs[1]))) {
+            /* This is a tiny editor which you can start with 'editor filename' */
+	    $filetoedit = $regs[1];
+            if ($regs[1]{0} != '/') {
+                /* relative path, add it to the current working directory.*/
+                $filetoedit = $_SESSION['cwd'].'/'.$regs[1];
+            } ;
+            if(is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
                 $showeditor = true;
-                if(file_exists(realpath($_SESSION['cwd']."/".$regs[1])))
-                    $filetoedit = realpath($_SESSION['cwd']."/".$regs[1]);
-                else
-                    $filetoedit = $_SESSION['cwd']."/".$regs[1];
+                if(file_exists(realpath($filetoedit)))
+                    $filetoedit = realpath($filetoedit);
             } else {
                 $_SESSION['output'] .= " Syntax: editor filename\n (just regular or not existing files)\n";
             }
@@ -439,30 +439,34 @@ if (!$_SESSION['authenticated']) {
   <legend><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <p>Current Working Directory:
 <span class="pwd"><?php
-     $parts = explode('/', $_SESSION['cwd']);
+    if( $showeditor ) {
+	echo htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8') . '</span>';
+    } else { /* normal mode - offer navigation via hyperlinks */
+      $parts = explode('/', $_SESSION['cwd']);
      
-     for($i=1; $i<count($parts); $i=$i+1) {
+      for($i=1; $i<count($parts); $i=$i+1) {
         echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
         echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8') ;
-     } 
-    ?></span><?php
-/* Now we make a list of the directories. */
-$dir_handle = opendir($_SESSION['cwd']);
-/* We store the output so that we can sort it later: */
-$options = array();
-/* Run through all the files and directories to find the dirs. */
-while ($dir = readdir($dir_handle)) {
-    if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
+      }
+      echo '</span>';
+      /* Now we make a list of the directories. */
+      $dir_handle = opendir($_SESSION['cwd']);
+      /* We store the output so that we can sort it later: */
+      $options = array();
+      /* Run through all the files and directories to find the dirs. */
+      while ($dir = readdir($dir_handle)) {
+	if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
 	  $options[$dir] = "<option value=\"/$dir\">$dir</option>";
+	}
+      }
+      closedir($dir_handle);
+      if (count($options)>0) {
+	ksort($options);
+	echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
+	echo implode("\n", $options);
+	echo '</select>';
+      }
     }
-}
-closedir($dir_handle);
-if (count($options)>0) {
-    ksort($options);
-    echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
-    echo implode("\n", $options);
-    echo '</select>';
-}
 ?>
 <br>
 
