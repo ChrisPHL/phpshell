@@ -41,13 +41,11 @@ Safe Mode
 
 Safe Mode is the nemisis of PHP Shell.  If PHP is running in Safe Mode
 then PHP Shell will normally not work --- sorry.  Please read the
-detailed explaination in the SECURITY file.
+detailed explanation in the SECURITY file.
 
 
 Who am I?
 =========
-
-(Well, my name is Martin, but that's not the point :-)
 
 You may not be the same user when using PHP Shell, as you are when you
 upload your files with FTP.  On some systems you will be ``nobody``,
@@ -82,7 +80,7 @@ You will then be presented with a rather simple page containing
 nothing much except a big window with the cursor blinking at the
 bottom, signaling that it's ready to obey your commands.
 
-Write a command and press RET --- or alternatively, press the 'Execute
+Write a command and press ENTER --- or alternatively, press the 'Execute
 Command' button if you really want.  The command will be executed and
 the result will be shows in the terminal.  You can now enter another
 command.
@@ -93,8 +91,20 @@ have just executed, the output of the command to standard out
 
 The commands are executed relative to a current working directory,
 which is written at the top.  You change this by the normal 'cd'
-command.
+command (or by selecting a other working directory using the links).
 
+The commands must also be complete, so you cannot enter a multiline command:
+$ for i in a b c ; do
+> echo $i
+> done
+However, in one line it is allowed: for i in a b c ; do echo $i ; done
+
+Variables are also not preserved between the commands, so
+$ A=1
+$ echo $A
+will output 0 instead of 1. But in one line it works as expected:
+$ A=1 ; echo $A
+will give you the expected result: 1
 
 Alternatives
 ============
@@ -146,7 +156,7 @@ README
   This file! :-)
 
 INSTALL
-  Tells you how to install PHP Shell.  Amoung other things, it
+  Tells you how to install PHP Shell.  Among other things, it
   explains how to change the password protection so that you can use
   PHP Shell.
 

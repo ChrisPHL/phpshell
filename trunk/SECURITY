@@ -6,7 +6,7 @@ Licensed under the GNU GPL.  See the file COPYING for details.
 PHP Security
 ============
 
-Installing PHP on your server is an inheriently dangerous thing to do,
+Installing PHP on your server is an inherently dangerous thing to do,
 somewhat similar to the danger one faces when one buys a car: it might
 kill you if you have an accident.  On the other hand a car makes so
 many things so much more convenient, so most people are willing to
@@ -116,7 +116,7 @@ with not-so-good intentions to destroy valuable content on servers.
 
 The longer answer is that installing PHP Shell is like building a new
 door in your house --- if you leave it unlocked, then people can (and
-probably will!)  walk into it and steal your posessions.  So you want
+probably will!)  walk into it and steal your possessions.  So you want
 to lock it, and make sure you use a good lock.
 
 With PHP Shell that is equivalent of using a secure password.  A
@@ -128,7 +128,7 @@ it).
   crackers and your files!
 
 If you use a good password, then PHP Shell does not make your system
-any more unsecure than it already was.  Security is always a matter of
+any more insecure than it already was.  Security is always a matter of
 finding the weakest link in the chain: if you use FTP with a simple
 password for updating your site, then it would be much easier for the
 crackers to attack that instead of trying to guess your super-hard PHP
