@@ -2,7 +2,7 @@
 ; Do not remove the above line, it is all that prevents this file from
 ; being downloaded.
 ;
-; config.php file for PHP Shell @VERSION@
+; config.php file for PHP Shell
 ; Copyright (C) 2005-2010 the Phpshell-team
 ; Licensed under the GNU GPL.  See the file COPYING for details.
 
