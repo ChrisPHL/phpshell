@@ -1,11 +1,12 @@
 <?php
 /*
- * pwhash.php file for PHP Shell @VERSION@
+ * pwhash.php file for PHP Shell
  * Copyright (C) 2005-2010 the Phpshell-team
- * Licensed under the GNU GPL.  See the file COPYING for details.
+ * Licensed under the GNU GPL. See the file COPYING for details.
  *
  */
 
+define('PHPSHELL_VERSION', '2.2');
 
 function stripslashes_deep($value) {
   if (is_array($value))
@@ -25,7 +26,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>Password Hasher for PHP Shell @VERSION@</title>
+  <title>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></title>
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
@@ -34,7 +35,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 
 <body>
 
-<h1>Password Hasher for PHP Shell @VERSION@</h1>
+<h1>Password Hasher for PHP Shell  <?php echo PHPSHELL_VERSION ?></h1>
 
 <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST">
 
@@ -98,7 +99,7 @@ if ($username == '' || $password == '') {
 
 <address>
   Copyright &copy; the Phpshell-team, please see <a href="AUTHORS">AUTHORS</a>.
-  This is PHP Shell @VERSION@, get the latest version at <a
+  This is PHP Shell <?php echo PHPSHELL_VERSION ?>, get the latest version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
 

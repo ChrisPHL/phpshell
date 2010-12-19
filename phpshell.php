@@ -1,9 +1,10 @@
 <?php // -*- coding: utf-8 -*-
 
+define('PHPSHELL_VERSION', '2.2');
 /*
 
   **************************************************************
-  *                     PHP Shell 2.1                          *
+  *                     PHP Shell                              *
   **************************************************************
 
   PHP Shell is an interactive PHP script that will execute any command
@@ -47,7 +48,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>PHP Shell 2.1</title>
+  <title>PHP Shell ' . PHPSHELL_VERSION . '</title>
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
@@ -338,7 +339,7 @@ if ($_SESSION['authenticated']) {
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>PHP Shell 2.1</title>
+  <title>PHP Shell <?php echo PHPSHELL_VERSION ?></title>
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
@@ -400,7 +401,7 @@ if ($_SESSION['authenticated']) {
 
 <body onload="init()">
 
-<h1>PHP Shell 2.1</h1>
+<h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
 <form name="shell" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
 <div><input name="levelup" id="levelup" type="hidden"></div>
@@ -540,12 +541,10 @@ instruction on how to use PHP Shell.</p>
 <p>If you have not created accounts for phpshell, please use <a href="pwhash.php">pwhash.php</a> to create secure passwords.</p>
 
 <hr>
-
 <address>
 Copyright &copy; 2000&ndash;2010, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
-
 </body>
 </html>

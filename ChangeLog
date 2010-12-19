@@ -64,13 +64,13 @@
 2003-11-11  Martin Geisler  <mgeisler@mgeisler.net>
 
 	* AUTHORS 1.6:
-	Added Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at>.
+	Added Wolfgang Dautermann <dauti@users.sourceforge.net>.
 
 	* phpshell.php 1.25:
 	Ups, I commited with $passwd = array('foo' => 'bar').
 
 	* phpshell.php 1.24:
-	Wolfgang Dautermann <wolfgang.dautermann@fh-joanneum.at> suggested
+	Wolfgang Dautermann <dauti@users.sourceforge.net> suggested
 	that the directory list should be sorted.
 
 	Also, changing directory through symbolic links now works as expected,
