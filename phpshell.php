@@ -258,6 +258,16 @@ if ($_SESSION['authenticated']) {
                 $_SESSION['output'] .= "cd: could not change to: $new_dir\n";
             }
 
+	/* history command (without parameter) - output the command history */
+	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*$/', $command)) {
+		$i = 1 ; 
+		foreach($_SESSION['history'] as $histline) {
+			$_SESSION['output'] .= sprintf("%5d  %s\n", $i, $histline);
+			$i++;
+		}
+	/* history command (with parameter "-c") - clear the command history */
+	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
+		$_SESSION['history'] = array() ;
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
