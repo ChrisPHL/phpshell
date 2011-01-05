@@ -98,7 +98,7 @@ function logout() {
 //    session_destroy();
 }
 
-/* Clear history */
+/* Clear screen */
 function clear() 
 {
   $_SESSION['output'] = '';
@@ -145,7 +145,7 @@ session_start();
 if (isset($_POST['logout']))
     logout();
     
-/* Delete history if submitted */
+/* Clear screen if submitted */
 if (isset($_POST['clear']))
     clear();
 
@@ -268,6 +268,9 @@ if ($_SESSION['authenticated']) {
 	/* history command (with parameter "-c") - clear the command history */
 	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
 		$_SESSION['history'] = array() ;
+	/* "clear" command - clear the screen */
+	} elseif (preg_match('/^[[:blank:]]*clear[[:blank:]]*$/', $command)) {
+		clear() ;
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
