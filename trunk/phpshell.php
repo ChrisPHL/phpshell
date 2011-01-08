@@ -11,7 +11,7 @@ define('PHPSHELL_VERSION', '2.2');
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2010 the Phpshell-team
+  Copyright (C) 2000-2011 the Phpshell-team
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -68,7 +68,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2010, the Phpshell-team. Get the latest
+  Copyright &copy; 2000&ndash;2011, the Phpshell-team. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
@@ -212,7 +212,7 @@ if ($_SESSION['authenticated']) {
         array_unshift($_SESSION['history'], $command);
   
         /* Now append the commmand to the output. */
-        $_SESSION['output'] .= '$ ' . $command . "\n";
+        $_SESSION['output'] .= '$ ' . htmlspecialchars($command, ENT_COMPAT, 'UTF-8') . "\n";
 
         /* Initialize the current working directory. */
         if (preg_match('/^[[:blank:]]*cd[[:blank:]]*$/', $command)) {
@@ -421,7 +421,7 @@ if ($_SESSION['authenticated']) {
 <div><input name="changedirectory" id="changedirectory" type="hidden"></div>
 <?php
 if (!$_SESSION['authenticated']) {
-    /* Genereate a new nounce every time we preent the login page.  This binds
+    /* Generate a new nounce every time we preent the login page.  This binds
      * each login to a unique hit on the server and prevents the simple replay
      * attack where one uses the back button in the browser to replay the POST
      * data from a login. */
@@ -555,7 +555,7 @@ instruction on how to use PHP Shell.</p>
 
 <hr>
 <address>
-Copyright &copy; 2000&ndash;2010, the Phpshell-team. Get the
+Copyright &copy; 2000&ndash;2011, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
