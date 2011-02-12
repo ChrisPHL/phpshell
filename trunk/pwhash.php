@@ -30,6 +30,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
+  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 

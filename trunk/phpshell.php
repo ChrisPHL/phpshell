@@ -52,6 +52,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
+  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body>
@@ -356,6 +357,7 @@ if ($_SESSION['authenticated']) {
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
+  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 
   <script type="text/javascript">
