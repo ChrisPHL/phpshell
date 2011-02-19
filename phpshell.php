@@ -95,7 +95,7 @@ function logout() {
 
     /* Destroy the session data on the server.  This prevents the simple
      * replay attach where one uses the back button to re-authenticate using
-     * the old POST data since the server wont know the session then.*/
+     * the old POST data since the server wont know the session then. */
 //    session_destroy();
 }
 
@@ -192,6 +192,13 @@ if ($_SESSION['authenticated']) {
 	    if (@chdir($_SESSION['cwd'] . '/' . $changedir)) {
 		$command = '' ; /* ignore the command */
 		$_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir) ;
+	    }
+	}
+    }
+     if (isset($_FILES['uploadfile']['tmp_name'])) {
+	if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
+	    if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
+		echo "CANNOT MOVE {$_FILES['uploadfile']['name']}" ;
 	    }
 	}
     }
@@ -418,12 +425,12 @@ if ($_SESSION['authenticated']) {
 
 <h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
-<form name="shell" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
+<form name="shell" enctype="multipart/form-data" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
 <div><input name="levelup" id="levelup" type="hidden"></div>
 <div><input name="changedirectory" id="changedirectory" type="hidden"></div>
 <?php
 if (!$_SESSION['authenticated']) {
-    /* Generate a new nounce every time we preent the login page.  This binds
+    /* Generate a new nounce every time we present the login page.  This binds
      * each login to a unique hit on the server and prevents the simple replay
      * attack where one uses the back button in the browser to replay the POST
      * data from a login. */
@@ -526,7 +533,10 @@ echo rtrim($padding . $_SESSION['output']);
   <span style="float: right">Size: <input type="text" name="rows" size="2"
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
-  ?>"></span>
+  ?>"></span><br/>
+(optional) Upload file:
+<input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
+
 <?php } ?>
 
 
