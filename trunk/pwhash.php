@@ -22,32 +22,32 @@ $username = isset($_POST['username']) ? $_POST['username'] : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-   "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<?php echo '<?xml version="1.0" ?>' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
   <title>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></title>
-  <meta http-equiv="Content-Script-Type" content="text/javascript">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <meta name="generator" content="phpshell">
-  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
-  <link rel="stylesheet" href="style.css" type="text/css">
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="phpshell"/>
+  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico"/>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
 
 <body>
 
-<h1>Password Hasher for PHP Shell  <?php echo PHPSHELL_VERSION ?></h1>
+<h1>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
-<form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST">
-
-<fieldset>
-  <legend>Username</legend>
-  <input name="username" type="text" value="<?php echo $username ?>">
-</fieldset>
+<form action="<?php $_SERVER['PHP_SELF']; ?>" method="post">
 
 <fieldset>
-  <legend>Password</legend>
-  <input name="password" type="text" value="<?php echo $password ?>">
+  <legend>Username/Password</legend>
+  <label for="username">Username:</label>
+  <input name="username" id="username" type="text" value="<?php echo $username ?>"/>
+  <br/>
+  <label for="password">Password:</label>
+  <input name="password" id="password" type="text" value="<?php echo htmlspecialchars($password) ?>"/>
 </fieldset>
 
 <fieldset>
@@ -55,27 +55,23 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 
 <?php
 if ($username == '' || $password == '') {
-  echo "  <p><i>Enter a username and a password and update.</i></p>\n";
+	echo "  <p><i>Enter a username and a password and update.</i></p>\n";
 } else {
 
-  $u = strtolower($username);
+	$u = strtolower($username);
 
-  if (preg_match('/[[ |&~!()]/', $u) || $u == 'null' ||
+	if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u) || $u == 'null' ||
       $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false') {
 
-    echo '  <p class="error">Your username cannot contain any of the following reserved
-  word: "<tt>null</tt>", "<tt>yes</tt>", "<tt>no</tt>", "<tt>true</tt>", or
-  "<tt>false</tt>".  The following characters are also prohibited:
-  "<tt>&nbsp;</tt>" (space), "<tt>[</tt>" (left bracket), "<tt>|</tt>" (pipe),
-  "<tt>&</tt>" (ampersand), "<tt>~</tt>" (tilde), "<tt>!</tt>" (exclamation
-  mark), "<tt>(</tt>" (left parenthesis), or "<tt>)</tt>" (right
-  parenthesis).</p>' . "\n";
+    echo '<p class="error">Your username cannot contain any of the following reserved
+  words: "<tt>null</tt>", "<tt>yes</tt>", "<tt>no</tt>", "<tt>true</tt>", or
+  "<tt>false</tt>".  It can contain only letters and digits and must start with a letter.' . "\n";
 
     echo '  <p>Please choose another username and try again.</p>' . "\n";
 
   } else {
     echo "  <p>Write the following line into <tt>config.php</tt> " .
-      "in the <tt>users</tt> section:</p>\n";
+      "in the <tt>[users]</tt> section:</p>\n";
 
     if ( function_exists('sha1') ) { $fkt = 'sha1' ; } else { $fkt = 'md5' ; } ;
     $salt = dechex(mt_rand());
@@ -83,20 +79,15 @@ if ($username == '' || $password == '') {
     $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
 
     echo "<pre>\n";
-    echo htmlentities(str_pad($username, 8) . ' = "' . $hash . '"') . "\n";
+    echo "$u = &quot;$hash&quot;\n";
     echo "</pre>\n";
   }
 }
 ?>
-
-<p><input type="submit" value="Update"></p>
-
+<p><input type="submit" value="Update"/></p>
 </fieldset>
-
 </form>
-
-
-<hr>
+<hr/>
 
 <address>
   Copyright &copy; the Phpshell-team, please see <a href="AUTHORS">AUTHORS</a>.
