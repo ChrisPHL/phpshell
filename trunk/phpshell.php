@@ -195,7 +195,7 @@ if ($_SESSION['authenticated']) {
 	    }
 	}
     }
-     if (isset($_FILES['uploadfile']['tmp_name'])) {
+    if (isset($_FILES['uploadfile']['tmp_name'])) {
 	if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
 	    if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
 		echo "CANNOT MOVE {$_FILES['uploadfile']['name']}" ;
@@ -211,23 +211,23 @@ if ($_SESSION['authenticated']) {
     }
 
     if (!empty($command)) {
-        /* Save the command for late use in the JavaScript.  If the command is
-         * already in the history, then the old entry is removed before the
-         * new entry is put into the list at the front. */
-        if (($i = array_search($command, $_SESSION['history'])) !== false)
-            unset($_SESSION['history'][$i]);
-        
-        array_unshift($_SESSION['history'], $command);
-  
-        /* Now append the commmand to the output. */
-        $_SESSION['output'] .= '$ ' . htmlspecialchars($command, ENT_COMPAT, 'UTF-8') . "\n";
+	/* Save the command for late use in the JavaScript. If the command is
+	 * already in the history, then the old entry is removed before the
+	 * new entry is put into the list at the front. */
+	if (($i = array_search($command, $_SESSION['history'])) !== false)
+	    unset($_SESSION['history'][$i]);
 
-        /* Initialize the current working directory. */
-        if (preg_match('/^[[:blank:]]*cd[[:blank:]]*$/', $command)) {
-            $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
-        } elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
-            /* The current command is a 'cd' command which we have to handle
-             * as an internal shell command. */
+	array_unshift($_SESSION['history'], $command);
+  
+	/* Now append the commmand to the output. */
+	$_SESSION['output'] .= '$ ' . htmlspecialchars($command, ENT_COMPAT, 'UTF-8') . "\n";
+
+	/* Initialize the current working directory. */
+	if (preg_match('/^[[:blank:]]*cd[[:blank:]]*$/', $command)) {
+	    $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
+	} elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
+	    /* The current command is a 'cd' command which we have to handle
+	     * as an internal shell command. */
 
 	    /* if the directory starts and ends with quotes ("), remove them -
 	       allows command like 'cd "abc def"' */
@@ -236,35 +236,35 @@ if ($_SESSION['authenticated']) {
 	      $regs[1] = substr($regs[1],0,-1) ;
 	    }
 
-            if ($regs[1]{0} == '/') {
-                /* Absolute path, we use it unchanged. */
-                $new_dir = $regs[1];
-            } else {
-                /* Relative path, we append it to the current working
-                 * directory. */
-                $new_dir = $_SESSION['cwd'] . '/' . $regs[1];
-            }
-      
-            /* Transform '/./' into '/' */
-            while (strpos($new_dir, '/./') !== false)
-                $new_dir = str_replace('/./', '/', $new_dir);
+	    if ($regs[1]{0} == '/') {
+		/* Absolute path, we use it unchanged. */
+		$new_dir = $regs[1];
+	    } else {
+		/* Relative path, we append it to the current working
+		 * directory. */
+		$new_dir = $_SESSION['cwd'] . '/' . $regs[1];
+	    }
 
-            /* Transform '//' into '/' */
-            while (strpos($new_dir, '//') !== false)
-                $new_dir = str_replace('//', '/', $new_dir);
+	    /* Transform '/./' into '/' */
+	    while (strpos($new_dir, '/./') !== false)
+		$new_dir = str_replace('/./', '/', $new_dir);
 
-            /* Transform 'x/..' into '' */
-            while (preg_match('|/\.\.(?!\.)|', $new_dir))
-                $new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
-      
-            if ($new_dir == '') $new_dir = '/';
-      
-            /* Try to change directory. */
-            if (@chdir($new_dir)) {
-                $_SESSION['cwd'] = $new_dir;
-            } else {
-                $_SESSION['output'] .= "cd: could not change to: $new_dir\n";
-            }
+	    /* Transform '//' into '/' */
+	    while (strpos($new_dir, '//') !== false)
+		$new_dir = str_replace('//', '/', $new_dir);
+
+	    /* Transform 'x/..' into '' */
+	    while (preg_match('|/\.\.(?!\.)|', $new_dir))
+		$new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
+
+	    if ($new_dir == '') $new_dir = '/';
+
+	    /* Try to change directory. */
+	    if (@chdir($new_dir)) {
+		$_SESSION['cwd'] = $new_dir;
+	    } else {
+		$_SESSION['output'] .= "cd: could not change to: $new_dir\n";
+	    }
 
 	/* history command (without parameter) - output the command history */
 	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*$/', $command)) {
@@ -286,10 +286,10 @@ if ($_SESSION['authenticated']) {
                $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
         
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]+([^;]+)$/', $command, $regs)) {
-            /* This is a tiny editor which you can start with 'editor filename' */
+            /* This is a tiny editor which you can start with 'editor filename'. */
 	    $filetoedit = $regs[1];
             if ($regs[1]{0} != '/') {
-                /* relative path, add it to the current working directory.*/
+                /* relative path, add it to the current working directory. */
                 $filetoedit = $_SESSION['cwd'].'/'.$regs[1];
             } ;
             if(is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
@@ -448,8 +448,7 @@ if (!$_SESSION['authenticated']) {
   ?>
 
   <label for="username">Username:</label>
-  <input name="username" id="username" type="text" value="<?php echo $username
-  ?>"><br>
+  <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
   <label for="password">Password:</label>
   <input name="password" id="password" type="password">
   <p><input type="submit" value="Login"></p>
@@ -534,10 +533,11 @@ echo rtrim($padding . $_SESSION['output']);
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
   ?>"></span><br/>
-(optional) Upload file:
-<input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
-
-<?php } ?>
+<?php if($ini['settings']['file-upload']) { ?>
+    (optional) Upload file:
+    <input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
+    <?php }
+ } ?>
 
 
 <?php if(! $showeditor) { /* for normal 'non-editor-mode' */ ?>
