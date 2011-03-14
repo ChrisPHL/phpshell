@@ -67,3 +67,8 @@ home-directory = "."
 ; the warning.
 
 safe-mode-warning = true
+
+; Enable File upload. Do you want to use the file upload function?
+
+file-upload = false
+
