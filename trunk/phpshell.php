@@ -140,8 +140,8 @@ $ini['settings'] = array_merge($default_settings, $ini['settings']);
 
 session_start();
 
-/* Delete the session data if the user requested a logout.  This leaves the
- * session cookie at the user, but this is not important since we
+/* Delete the session data if the user requested a logout. This leaves
+ * the session cookie at the user, but this is not important since we
  * authenticates on $_SESSION['authenticated']. */
 if (isset($_POST['logout']))
     logout();
@@ -205,8 +205,8 @@ if ($_SESSION['authenticated']) {
 
     /* Save content from 'editor' */
     if(isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
-        $filetoedit_handle = fopen($_POST["filetoedit"], "w");
-        fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
+	$filetoedit_handle = fopen($_POST["filetoedit"], "w");
+	fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
 		fclose($filetoedit_handle);
     }
 
@@ -219,7 +219,7 @@ if ($_SESSION['authenticated']) {
 
 	array_unshift($_SESSION['history'], $command);
   
-	/* Now append the commmand to the output. */
+	/* Now append the command to the output. */
 	$_SESSION['output'] .= '$ ' . htmlspecialchars($command, ENT_COMPAT, 'UTF-8') . "\n";
 
 	/* Initialize the current working directory. */
@@ -279,7 +279,7 @@ if ($_SESSION['authenticated']) {
 	/* "clear" command - clear the screen */
 	} elseif (preg_match('/^[[:blank:]]*clear[[:blank:]]*$/', $command)) {
 		clear() ;
-        } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
+	} elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
 
@@ -300,9 +300,7 @@ if ($_SESSION['authenticated']) {
                 $_SESSION['output'] .= " Syntax: editor filename\n (just regular or not existing files)\n";
             }
 
-        } elseif (trim($command) == 'exit') {
-            logout();
-        } elseif (trim($command) == 'logout') {
+        } elseif ((trim($command) == 'exit') || (trim($command) == 'logout')) {
             logout();
         } else {
 
@@ -532,7 +530,7 @@ echo rtrim($padding . $_SESSION['output']);
   <span style="float: right">Size: <input type="text" name="rows" size="2"
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
-  ?>"></span><br/>
+  ?>"></span><br>
 <?php if($ini['settings']['file-upload']) { ?>
     (optional) Upload file:
     <input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
