@@ -330,13 +330,21 @@ if ($_SESSION['authenticated']) {
 
             /* Read output sent to stdout. */
             while (!feof($io[1])) {
-                $_SESSION['output'] .= htmlspecialchars(fgets($io[1]),
-                                                        ENT_COMPAT, 'UTF-8');
+                $line=fgets($io[1]);
+                if (function_exists('mb_convert_encoding')) {
+                    /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
+                    $line = mb_convert_encoding($line), 'UTF-8', 'UTF-8');
+                }
+                $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
             }
             /* Read output sent to stderr. */
             while (!feof($io[2])) {
-                $_SESSION['output'] .= htmlspecialchars(fgets($io[2]),
-                                                        ENT_COMPAT, 'UTF-8');
+                $line=fgets($io[2]);
+                if (function_exists('mb_convert_encoding')) {
+                    /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
+                    $line = mb_convert_encoding($line), 'UTF-8', 'UTF-8');
+                }
+                $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
             }
             
             fclose($io[1]);
