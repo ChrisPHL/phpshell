@@ -68,6 +68,11 @@ home-directory = "."
 
 safe-mode-warning = true
 
+; Prompt string $PS1 ($PS2, $PS3 and $PS4 can not occur when using phpshell, 
+; since commands are non-interacive!)
+
+PS1 = "$ "
+
 ; Enable File upload. Do you want to use the file upload function?
 
 file-upload = false
