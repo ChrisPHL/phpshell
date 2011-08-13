@@ -132,7 +132,8 @@ if (empty($ini['settings']))
     $ini['settings'] = array();
 
 /* Default settings --- these settings should always be set to something. */
-$default_settings = array('home-directory'   => '.');
+$default_settings = array('home-directory' => '.',
+                          'PS1'            => '$ ');
 $showeditor = false;
 
 /* Merge settings. */
@@ -220,7 +221,7 @@ if ($_SESSION['authenticated']) {
 	array_unshift($_SESSION['history'], $command);
   
 	/* Now append the command to the output. */
-	$_SESSION['output'] .= '$ ' . htmlspecialchars($command, ENT_COMPAT, 'UTF-8') . "\n";
+	$_SESSION['output'] .= htmlspecialchars($ini['settings']['PS1'] . $command, ENT_COMPAT, 'UTF-8') . "\n";
 
 	/* Initialize the current working directory. */
 	if (preg_match('/^[[:blank:]]*cd[[:blank:]]*$/', $command)) {
@@ -501,7 +502,7 @@ echo rtrim($padding . $_SESSION['output']);
 ?>
 </textarea>
 <p id="prompt">
-  $&nbsp;<input name="command" type="text"
+<?php echo htmlentities($ini['settings']['PS1']); ?><input name="command" type="text"
                 onkeyup="key(event)" size="<?php echo $columns-2 ?>" tabindex="1">
 </p>
 </div>
