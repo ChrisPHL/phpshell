@@ -37,7 +37,8 @@ header("Content-Type: text/html; charset=utf-8");
 
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
-function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
+function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
+{
     /* The @-operator (used with chdir() below) temporarely makes
      * error_reporting() return zero, and we don't want to die in that case.
      * We do note the error in the output, though. */
@@ -84,7 +85,8 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
 set_error_handler('error_handler');
 
 
-function logout() {
+function logout()
+{
     /* Empty the session data, except for the 'authenticated' entry which the
      * rest of the code needs to be able to check. */
     $_SESSION = array('authenticated' => false);
@@ -102,10 +104,11 @@ function logout() {
 /* Clear screen */
 function clear() 
 {
-  $_SESSION['output'] = '';
+    $_SESSION['output'] = '';
 }
 
-function stripslashes_deep($value) {
+function stripslashes_deep($value)
+{
     if (is_array($value))
         return array_map('stripslashes_deep', $value);
     else
@@ -182,7 +185,7 @@ if ($_SESSION['authenticated']) {
 	$levelup = $_POST['levelup'] ;
 	while ($levelup > 0) {
 	    $command = '' ; /* ignore the command */
-	    $_SESSION['cwd'] = dirname($_SESSION['cwd']) ;
+	    $_SESSION['cwd'] = dirname($_SESSION['cwd']);
 	    $levelup -- ;
 	}
     }
@@ -192,7 +195,7 @@ if ($_SESSION['authenticated']) {
 	if (strlen($changedir) > 0) {
 	    if (@chdir($_SESSION['cwd'] . '/' . $changedir)) {
 		$command = '' ; /* ignore the command */
-		$_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir) ;
+		$_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir);
 	    }
 	}
     }
@@ -205,7 +208,7 @@ if ($_SESSION['authenticated']) {
     }
 
     /* Save content from 'editor' */
-    if(isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
+    if (isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
 	$filetoedit_handle = fopen($_POST["filetoedit"], "w");
 	fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
 		fclose($filetoedit_handle);
@@ -232,9 +235,9 @@ if ($_SESSION['authenticated']) {
 
 	    /* if the directory starts and ends with quotes ("), remove them -
 	       allows command like 'cd "abc def"' */
-	    if ((substr($regs[1],0,1) == '"') && (substr($regs[1],-1) =='"') ) {
-	      $regs[1] = substr($regs[1],1) ;
-	      $regs[1] = substr($regs[1],0,-1) ;
+	    if ((substr($regs[1], 0, 1) == '"') && (substr($regs[1], -1) =='"') ) {
+	      $regs[1] = substr($regs[1], 1);
+	      $regs[1] = substr($regs[1], 0, -1);
 	    }
 
 	    if ($regs[1]{0} == '/') {
@@ -270,7 +273,7 @@ if ($_SESSION['authenticated']) {
 	/* history command (without parameter) - output the command history */
 	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*$/', $command)) {
 		$i = 1 ; 
-		foreach($_SESSION['history'] as $histline) {
+		foreach ($_SESSION['history'] as $histline) {
 			$_SESSION['output'] .= sprintf("%5d  %s\n", $i, $histline);
 			$i++;
 		}
@@ -279,7 +282,7 @@ if ($_SESSION['authenticated']) {
 		$_SESSION['history'] = array() ;
 	/* "clear" command - clear the screen */
 	} elseif (preg_match('/^[[:blank:]]*clear[[:blank:]]*$/', $command)) {
-		clear() ;
+		clear();
 	} elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
@@ -293,7 +296,7 @@ if ($_SESSION['authenticated']) {
                 /* relative path, add it to the current working directory. */
                 $filetoedit = $_SESSION['cwd'].'/'.$regs[1];
             } ;
-            if(is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
+            if (is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
                 $showeditor = true;
                 if(file_exists(realpath($filetoedit)))
                     $filetoedit = realpath($filetoedit);
@@ -333,7 +336,7 @@ if ($_SESSION['authenticated']) {
                 $line=fgets($io[1]);
                 if (function_exists('mb_convert_encoding')) {
                     /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                    $line = mb_convert_encoding($line), 'UTF-8', 'UTF-8');
+                    $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
                 }
                 $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
             }
@@ -342,7 +345,7 @@ if ($_SESSION['authenticated']) {
                 $line=fgets($io[2]);
                 if (function_exists('mb_convert_encoding')) {
                     /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                    $line = mb_convert_encoding($line), 'UTF-8', 'UTF-8');
+                    $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
                 }
                 $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
             }
@@ -404,7 +407,7 @@ if ($_SESSION['authenticated']) {
     document.shell.command.focus()
   }
 
-  <?php } elseif($_SESSION['authenticated'] && $showeditor) { ?>
+  <?php } elseif ($_SESSION['authenticated'] && $showeditor) { ?>
 
   function init() {
     document.shell.filecontent.focus();
@@ -468,14 +471,14 @@ if (!$_SESSION['authenticated']) {
   <legend><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <p>Current Working Directory:
 <span class="pwd"><?php
-    if( $showeditor ) {
+    if ( $showeditor ) {
 	echo htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8') . '</span>';
     } else { /* normal mode - offer navigation via hyperlinks */
       $parts = explode('/', $_SESSION['cwd']);
      
-      for($i=1; $i<count($parts); $i=$i+1) {
+      for ($i=1; $i<count($parts); $i=$i+1) {
         echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
-        echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8') ;
+        echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8');
       }
       echo '</span>';
       /* Now we make a list of the directories. */
@@ -499,7 +502,7 @@ if (!$_SESSION['authenticated']) {
 ?>
 <br>
 
-    <?php if(! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
+    <?php if (! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
 
 <div id="terminal">
 <textarea name="output" readonly="readonly" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
@@ -521,7 +524,7 @@ echo rtrim($padding . $_SESSION['output']);
 <div id="terminal">
 <textarea name="filecontent" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
 <?php
-    if(file_exists($filetoedit)) {
+    if (file_exists($filetoedit)) {
          print(htmlspecialchars(str_replace("%0D%0D%0A", "%0D%0A", file_get_contents($filetoedit))));		 
     }
 ?>
@@ -531,7 +534,7 @@ echo rtrim($padding . $_SESSION['output']);
 <?php } /* End of terminal */ ?>
 
 <p>
-<?php if(! $showeditor) { /* You can not resize the textarea while
+<?php if (! $showeditor) { /* You can not resize the textarea while
                            * the editor is 'running', because if you would
                            * do so you would lose the changes you have
                            * already made in the textarea since last saving */
@@ -540,14 +543,14 @@ echo rtrim($padding . $_SESSION['output']);
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
   ?>"></span><br>
-<?php if($ini['settings']['file-upload']) { ?>
+<?php if ($ini['settings']['file-upload']) { ?>
     (optional) Upload file:
     <input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
     <?php }
  } ?>
 
 
-<?php if(! $showeditor) { /* for normal 'non-editor-mode' */ ?>
+<?php if (! $showeditor) { /* for normal 'non-editor-mode' */ ?>
 <input type="submit" value="Execute Command">
 <input type="submit" name="clear" value="Clear">
 <?php } else { /* for 'editor-mode' */ ?>
