@@ -1,5 +1,5 @@
 SECURITY file for PHP Shell
-Copyright (C) 2005-2010 the Phpshell-team
+Copyright (C) 2005-2011 the PHP Shell-team
 Licensed under the GNU GPL.  See the file COPYING for details.
 
 
@@ -92,7 +92,7 @@ will see an error like this:
 
     proc_open() has been disabled for security reasons
 
-    in /path/to/your/installation/phpshell.php, line 221.
+    in /path/to/your/installation/phpshell.php, line 329.
 
 
 
@@ -135,7 +135,14 @@ crackers to attack that instead of trying to guess your super-hard PHP
 Shell password.  So make sure that you tighten security on all fronts
 you know of.
 
+If you use PHP Shell not very often, you can also remove all 
+permissions from the "phpshell" directory as an addtional security
+measure, when it is not used, so that the webserver can not access
+PHP Shell (and only set the normal permissions (755 usually in 
+Unix/Linux) when you use it).
+
+
 
 If you have comments or suggestions for improvements to this little
 guide in system security, then please do not hesitate to contact the
-author at <mgeisler@mgeisler.net>.
+PHP shell team.
