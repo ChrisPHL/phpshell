@@ -1,6 +1,6 @@
 <?php // -*- coding: utf-8 -*-
 
-define('PHPSHELL_VERSION', '2.2');
+define('PHPSHELL_VERSION', '2.3');
 /*
 
   **************************************************************
@@ -227,7 +227,7 @@ if ($_SESSION['authenticated']) {
 	$_SESSION['output'] .= htmlspecialchars($ini['settings']['PS1'] . $command, ENT_COMPAT, 'UTF-8') . "\n";
 
 	/* Initialize the current working directory. */
-	if (preg_match('/^[[:blank:]]*cd[[:blank:]]*$/', $command)) {
+	if (trim($command) == 'cd') {
 	    $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
 	} elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
 	    /* The current command is a 'cd' command which we have to handle
@@ -271,7 +271,7 @@ if ($_SESSION['authenticated']) {
 	    }
 
 	/* history command (without parameter) - output the command history */
-	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*$/', $command)) {
+	} elseif (trim($command) == 'history') {
 		$i = 1 ; 
 		foreach ($_SESSION['history'] as $histline) {
 			$_SESSION['output'] .= sprintf("%5d  %s\n", $i, $histline);
@@ -281,7 +281,7 @@ if ($_SESSION['authenticated']) {
 	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
 		$_SESSION['history'] = array() ;
 	/* "clear" command - clear the screen */
-	} elseif (preg_match('/^[[:blank:]]*clear[[:blank:]]*$/', $command)) {
+	} elseif (trim($command) == 'clear') {
 		clear();
 	} elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help

@@ -6,7 +6,7 @@
  *
  */
 
-define('PHPSHELL_VERSION', '2.2');
+define('PHPSHELL_VERSION', '2.3');
 
 function stripslashes_deep($value) {
   if (is_array($value))
