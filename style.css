@@ -55,6 +55,14 @@ fieldset {
   padding: 0.5em;
 }
 
+label {
+  float: left;
+  width: 20%;
+  margin-right: 1em;
+  text-align: right;
+  font-weight: bold;
+}
+
 .error {
   color: red;
 }
