@@ -102,7 +102,7 @@ function logout()
 }
 
 /* Clear screen */
-function clear() 
+function clearscreen() 
 {
     $_SESSION['output'] = '';
 }
@@ -152,7 +152,7 @@ if (isset($_POST['logout']))
     
 /* Clear screen if submitted */
 if (isset($_POST['clear']))
-    clear();
+    clearscreen();
 
 /* Attempt authentication. */
 if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
@@ -282,7 +282,7 @@ if ($_SESSION['authenticated']) {
 		$_SESSION['history'] = array() ;
 	/* "clear" command - clear the screen */
 	} elseif (trim($command) == 'clear') {
-		clear();
+		clearscreen();
 	} elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
@@ -551,8 +551,8 @@ echo rtrim($padding . $_SESSION['output']);
 
 
 <?php if (! $showeditor) { /* for normal 'non-editor-mode' */ ?>
-<input type="submit" value="Execute Command">
-<input type="submit" name="clear" value="Clear">
+<input type="submit" value="Execute command">
+<input type="submit" name="clear" value="Clear screen">
 <?php } else { /* for 'editor-mode' */ ?>
 <input type="hidden" name="filetoedit" id="filetoedit" value="<?php print($filetoedit) ?>">
 <input type="submit" value="Save and Exit">
