@@ -127,7 +127,8 @@ $command  = isset($_POST['command'])  ? $_POST['command']  : '';
 $rows     = isset($_POST['rows'])     ? $_POST['rows']     : 24;
 $columns  = isset($_POST['columns'])  ? $_POST['columns']  : 80;
 
-
+if (!preg_match('/^[[:digit:]]+$/',$rows)) $rows=24 ; 
+if (!preg_match('/^[[:digit:]]+$/',$columns)) $columns=80 ; 
 /* Load the configuration. */
 $ini = parse_ini_file('config.php', true);
 
