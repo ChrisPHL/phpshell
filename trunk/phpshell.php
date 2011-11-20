@@ -96,7 +96,7 @@ function logout()
 //        setcookie(session_name(), '', time()-42000, '/');
 
     /* Destroy the session data on the server.  This prevents the simple
-     * replay attach where one uses the back button to re-authenticate using
+     * replay attack where one uses the back button to re-authenticate using
      * the old POST data since the server wont know the session then. */
 //    session_destroy();
 }
@@ -544,14 +544,6 @@ echo rtrim($padding . $_SESSION['output']);
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
   ?>"></span><br>
-<?php if ($ini['settings']['file-upload']) { ?>
-    (optional) Upload file:
-    <input type="file" name="uploadfile" size="40"><input type="submit" value="Upload file">
-    <?php }
- } ?>
-
-
-<?php if (! $showeditor) { /* for normal 'non-editor-mode' */ ?>
 <input type="submit" value="Execute command">
 <input type="submit" name="clear" value="Clear screen">
 <?php } else { /* for 'editor-mode' */ ?>
@@ -564,6 +556,16 @@ echo rtrim($padding . $_SESSION['output']);
   <input type="submit" name="logout" value="Logout">
 </p>
 </fieldset>
+
+<?php if ($ini['settings']['file-upload']) { ?>
+<br><br>
+<fieldset>
+  <legend>File upload</legend>
+    Select file for upload:
+    <input type="file" name="uploadfile" size="40"><br>
+<input type="submit" value="Upload file">
+</fieldset>
+    <?php } ?>
 
 <?php } ?>
 
