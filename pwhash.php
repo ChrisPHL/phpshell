@@ -1,7 +1,7 @@
 <?php
 /*
  * pwhash.php file for PHP Shell
- * Copyright (C) 2005-2010 the Phpshell-team
+ * Copyright (C) 2005-2011 the Phpshell-team
  * Licensed under the GNU GPL. See the file COPYING for details.
  *
  */
@@ -47,7 +47,8 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
   <input name="username" id="username" type="text" value="<?php echo $username ?>"/>
   <br/>
   <label for="password">Password:</label>
-  <input name="password" id="password" type="text" value="<?php echo htmlspecialchars($password) ?>"/>
+  <input name="password" id="password" type="text" 
+         value="<?php echo htmlspecialchars($password) ?>"/>
 </fieldset>
 
 <fieldset>
@@ -55,15 +56,13 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 
 <?php
 if ($username == '' || $password == '') {
-	echo "  <p><i>Enter a username and a password and update.</i></p>\n";
+    echo '  <p><i>Enter a username and a password and update.</i></p>\n';
 } else {
-
-	$u = strtolower($username);
-
-	if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u) || $u == 'null' ||
-      $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false') {
-
-    echo '<p class="error">Your username cannot contain any of the following reserved
+    $u = strtolower($username);
+    if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u) || $u == 'null' ||
+       $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false'
+       ) {
+        echo '<p class="error">Your username cannot contain any of the following reserved
   words: "<tt>null</tt>", "<tt>yes</tt>", "<tt>no</tt>", "<tt>true</tt>", or
   "<tt>false</tt>".  It can contain only letters and digits and must start with a letter.' . "\n";
 
@@ -73,7 +72,11 @@ if ($username == '' || $password == '') {
     echo "  <p>Write the following line into <tt>config.php</tt> " .
       "in the <tt>[users]</tt> section:</p>\n";
 
-    if ( function_exists('sha1') ) { $fkt = 'sha1' ; } else { $fkt = 'md5' ; } ;
+    if ( function_exists('sha1') ) {
+       $fkt = 'sha1' ; 
+    } else {
+       $fkt = 'md5' ; 
+    } ;
     $salt = dechex(mt_rand());
 
     $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
