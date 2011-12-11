@@ -1,5 +1,5 @@
 Phpshell 2.3
-  * added file upload feature
+  * added file upload feature (not enabled by default)
   * fixed a strange UTF-8 bug
   * added internal history command
   * prompt $PS1 is now configurable

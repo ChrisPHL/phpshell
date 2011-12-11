@@ -56,7 +56,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 
 <?php
 if ($username == '' || $password == '') {
-    echo '  <p><i>Enter a username and a password and update.</i></p>\n';
+    echo '  <p><i>Enter a username and a password and update.</i></p><br/>';
 } else {
     $u = strtolower($username);
     if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u) || $u == 'null' ||
