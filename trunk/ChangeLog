@@ -1,3 +1,13 @@
+Phpshell 2.3
+  * added file upload feature
+  * fixed a strange UTF-8 bug
+  * added internal history command
+  * prompt $PS1 is now configurable
+  * Commands with HTML entities (e.g.: echo "&uuml;") were displayed 
+    encoded in the output
+
+
+------------------------------------------------------
 2010-11-29  Wolfgang Dautermann
     * Reimplemented the feature to change to subdirectorys using mouseclicks (was available in older version)
 
