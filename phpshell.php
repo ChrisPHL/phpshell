@@ -275,7 +275,7 @@ if ($_SESSION['authenticated']) {
 	} elseif (trim($command) == 'history') {
 		$i = 1 ; 
 		foreach ($_SESSION['history'] as $histline) {
-			$_SESSION['output'] .= sprintf("%5d  %s\n", $i, $histline);
+			$_SESSION['output'] .= htmlspecialchars(sprintf("%5d  %s\n", $i, $histline), ENT_COMPAT, 'UTF-8');;
 			$i++;
 		}
 	/* history command (with parameter "-c") - clear the command history */
