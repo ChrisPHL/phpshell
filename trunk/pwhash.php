@@ -8,15 +8,18 @@
 
 define('PHPSHELL_VERSION', '2.3');
 
-function stripslashes_deep($value) {
-  if (is_array($value))
-    return array_map('stripslashes_deep', $value);
-  else
-    return stripslashes($value);
+function stripslashes_deep($value) 
+{
+    if (is_array($value)) {
+        return array_map('stripslashes_deep', $value);
+    } else {
+        return stripslashes($value);
+    }
 }
 
-if (get_magic_quotes_gpc())
-  $_POST = stripslashes_deep($_POST);
+if (get_magic_quotes_gpc()) {
+    $_POST = stripslashes_deep($_POST);
+}
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
@@ -44,7 +47,8 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 <fieldset>
   <legend>Username/Password</legend>
   <label for="username">Username:</label>
-  <input name="username" id="username" type="text" value="<?php echo $username ?>"/>
+  <input name="username" id="username" type="text" 
+         value="<?php echo htmlspecialchars($username) ?>"/>
   <br/>
   <label for="password">Password:</label>
   <input name="password" id="password" type="text" 
@@ -59,32 +63,29 @@ if ($username == '' || $password == '') {
     echo '  <p><i>Enter a username and a password and update.</i></p><br/>';
 } else {
     $u = strtolower($username);
-    if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u) || $u == 'null' ||
-       $u == 'yes' || $u == 'no' || $u == 'true' || $u == 'false'
-       ) {
-        echo '<p class="error">Your username cannot contain any of the following reserved
-  words: "<tt>null</tt>", "<tt>yes</tt>", "<tt>no</tt>", "<tt>true</tt>", or
-  "<tt>false</tt>".  It can contain only letters and digits and must start with a letter.' . "\n";
-
-    echo '  <p>Please choose another username and try again.</p>' . "\n";
-
-  } else {
-    echo "  <p>Write the following line into <tt>config.php</tt> " .
-      "in the <tt>[users]</tt> section:</p>\n";
-
-    if ( function_exists('sha1') ) {
-       $fkt = 'sha1' ; 
+    if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u)
+        || in_array($u, array('null','yes','no','true','false','on','off', 'none'))
+    ) {
+        echo <<<END
+<p class="error">Your username cannot be one of the following reserved words: 
+'null', 'yes', 'no', 'true', 'false', 'on', 'off', 'none'.<br/>
+It can contain only letters and digits and must start with a letter.<br/>
+Please choose another username and try again.</p>
+END;
     } else {
-       $fkt = 'md5' ; 
-    } ;
-    $salt = dechex(mt_rand());
+        echo "<p>Write the following line into <tt>config.php</tt> "; 
+        echo "in the <tt>[users]</tt> section:</p>\n";
 
-    $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
+        if ( function_exists('sha1') ) {
+            $fkt = 'sha1' ; 
+        } else {
+            $fkt = 'md5' ; 
+        } ;
+        $salt = dechex(mt_rand());
+        $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
 
-    echo "<pre>\n";
-    echo "$u = &quot;$hash&quot;\n";
-    echo "</pre>\n";
-  }
+        echo "<pre>$u = &quot;$hash&quot;</pre>\n";
+    }
 }
 ?>
 <p><input type="submit" value="Update"/></p>
