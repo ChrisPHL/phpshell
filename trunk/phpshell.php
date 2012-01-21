@@ -321,49 +321,52 @@ if ($_SESSION['authenticated']) {
 
             /* The command is not an internal command, so we execute it after
              * changing the directory and save the output. */
-            chdir($_SESSION['cwd']);
+            if (@chdir($_SESSION['cwd'])) {
 
-            // We canot use putenv() in safe mode.
-            if (!ini_get('safe_mode')) {
-                // Advice programs (ls for example) of the terminal size.
-                putenv('ROWS=' . $rows);
-                putenv('COLUMNS=' . $columns);
-            }
-
-            /* Alias expansion. */
-            $length = strcspn($command, " \t");
-            $token = substr($command, 0, $length);
-            if (isset($ini['aliases'][$token]))
-                $command = $ini['aliases'][$token] . substr($command, $length);
-    
-            $io = array();
-            $p = proc_open($command,
-                array(1 => array('pipe', 'w'),
-                      2 => array('pipe', 'w')),
-                $io);
-
-            /* Read output sent to stdout. */
-            while (!feof($io[1])) {
-                $line=fgets($io[1]);
-                if (function_exists('mb_convert_encoding')) {
-                    /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                    $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
+                // We canot use putenv() in safe mode.
+                if (!ini_get('safe_mode')) {
+                    // Advice programs (ls for example) of the terminal size.
+                    putenv('ROWS=' . $rows);
+                    putenv('COLUMNS=' . $columns);
                 }
-                $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
-            }
-            /* Read output sent to stderr. */
-            while (!feof($io[2])) {
-                $line=fgets($io[2]);
-                if (function_exists('mb_convert_encoding')) {
-                    /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                    $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
+
+                /* Alias expansion. */
+                $length = strcspn($command, " \t");
+                $token = substr($command, 0, $length);
+                if (isset($ini['aliases'][$token])) {
+                    $command = $ini['aliases'][$token] . substr($command, $length);
                 }
-                $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
-            }
+                $io = array();
+                $p = proc_open($command,
+                    array(1 => array('pipe', 'w'),
+                          2 => array('pipe', 'w')),
+                    $io);
+
+                /* Read output sent to stdout. */
+                while (!feof($io[1])) {
+                    $line=fgets($io[1]);
+                    if (function_exists('mb_convert_encoding')) {
+                        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
+                        $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
+                    }
+                    $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
+                }
+                /* Read output sent to stderr. */
+                while (!feof($io[2])) {
+                    $line=fgets($io[2]);
+                    if (function_exists('mb_convert_encoding')) {
+                        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
+                        $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
+                    }
+                    $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
+                }
             
-            fclose($io[1]);
-            fclose($io[2]);
-            proc_close($p);
+                fclose($io[1]);
+                fclose($io[2]);
+                proc_close($p);
+            } else { /* It was not possible to change to working directory. Do not execute the command */
+                $_SESSION['output'] .= "PHP Shell could not change to working directory. Your command was not executed.\n";
+            }
         }
     }
 
@@ -492,23 +495,27 @@ if (!$_SESSION['authenticated']) {
             echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8');
         }
         echo '</span>';
-        /* Now we make a list of the directories. */
-        $dir_handle = opendir($_SESSION['cwd']);
-        /* We store the output so that we can sort it later: */
-        $options = array();
-        /* Run through all the files and directories to find the dirs. */
-        while ($dir = readdir($dir_handle)) {
-            if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
-                $options[$dir] = "<option value=\"/$dir\">$dir</option>";
+        if (is_readable($_SESSION['cwd'])) { /* is the current directory readable? */
+            /* Now we make a list of the directories. */
+            $dir_handle = opendir($_SESSION['cwd']);
+            /* We store the output so that we can sort it later: */
+            $options = array();
+            /* Run through all the files and directories to find the dirs. */
+            while ($dir = readdir($dir_handle)) {
+                if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
+                    $options[$dir] = "<option value=\"/$dir\">$dir</option>";
+                }
             }
-         }
-        closedir($dir_handle);
-        if (count($options)>0) {
-            ksort($options);
-            echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
-            echo implode("\n", $options);
-            echo '</select>';
-        }
+            closedir($dir_handle);
+            if (count($options)>0) {
+                ksort($options);
+                echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
+                echo implode("\n", $options);
+                echo '</select>';
+            }
+        } else {
+            echo "[current directory not readable]";
+        }  
     }
 ?>
 <br>
