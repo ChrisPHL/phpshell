@@ -92,13 +92,13 @@ function logout()
     $_SESSION = array('authenticated' => false);
 
     /* Unset the client's cookie, if it has one. */
-//    if (isset($_COOKIE[session_name()]))
-//        setcookie(session_name(), '', time()-42000, '/');
+    //    if (isset($_COOKIE[session_name()]))
+    //        setcookie(session_name(), '', time()-42000, '/');
 
     /* Destroy the session data on the server.  This prevents the simple
      * replay attack where one uses the back button to re-authenticate using
      * the old POST data since the server wont know the session then. */
-//    session_destroy();
+    //    session_destroy();
 }
 
 /* Clear screen */
@@ -109,14 +109,16 @@ function clearscreen()
 
 function stripslashes_deep($value)
 {
-    if (is_array($value))
+    if (is_array($value)) {
         return array_map('stripslashes_deep', $value);
-    else
+    } else {
         return stripslashes($value);
+    }
 }
 
-if (get_magic_quotes_gpc())
+if (get_magic_quotes_gpc()) {
     $_POST = stripslashes_deep($_POST);
+}
 
 /* Initialize some variables we need again and again. */
 $username = isset($_POST['username']) ? $_POST['username'] : '';
@@ -127,13 +129,18 @@ $command  = isset($_POST['command'])  ? $_POST['command']  : '';
 $rows     = isset($_POST['rows'])     ? $_POST['rows']     : 24;
 $columns  = isset($_POST['columns'])  ? $_POST['columns']  : 80;
 
-if (!preg_match('/^[[:digit:]]+$/', $rows)) $rows=24 ; 
-if (!preg_match('/^[[:digit:]]+$/', $columns)) $columns=80 ; 
+if (!preg_match('/^[[:digit:]]+$/', $rows)) { 
+    $rows=24 ; 
+} 
+if (!preg_match('/^[[:digit:]]+$/', $columns)) {
+    $columns=80 ;
+}
 /* Load the configuration. */
 $ini = parse_ini_file('config.php', true);
 
-if (empty($ini['settings']))
+if (empty($ini['settings'])) {
     $ini['settings'] = array();
+}
 
 /* Default settings --- these settings should always be set to something. */
 $default_settings = array('home-directory' => '.',
@@ -148,16 +155,19 @@ session_start();
 /* Delete the session data if the user requested a logout. This leaves
  * the session cookie at the user, but this is not important since we
  * authenticates on $_SESSION['authenticated']. */
-if (isset($_POST['logout']))
+if (isset($_POST['logout'])) {
     logout();
-    
+}
+
 /* Clear screen if submitted */
-if (isset($_POST['clear']))
+if (isset($_POST['clear'])) {
     clearscreen();
+}
 
 /* Attempt authentication. */
-if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
-    isset($ini['users'][$username])) {
+if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] 
+    && isset($ini['users'][$username])
+) {
     if (strchr($ini['users'][$username], ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $_SESSION['authenticated'] = ($ini['users'][$username] == $password);
@@ -170,9 +180,9 @@ if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] &&
 
 /* Enforce default non-authenticated state if the above code didn't set it
  * already. */
-if (!isset($_SESSION['authenticated']))
+if (!isset($_SESSION['authenticated'])) {
     $_SESSION['authenticated'] = false;
-
+}
 
 if ($_SESSION['authenticated']) {  
     /* Initialize the session variables. */
@@ -183,108 +193,108 @@ if ($_SESSION['authenticated']) {
     }
     /* Clicked on one of the directory links in the working directory - ignore the command */
     if (isset($_POST['levelup'])) {
-	$levelup = $_POST['levelup'] ;
-	while ($levelup > 0) {
-	    $command = '' ; /* ignore the command */
-	    $_SESSION['cwd'] = dirname($_SESSION['cwd']);
-	    $levelup -- ;
-	}
+        $levelup = $_POST['levelup'] ;
+        while ($levelup > 0) {
+            $command = '' ; /* ignore the command */
+            $_SESSION['cwd'] = dirname($_SESSION['cwd']);
+            $levelup -- ;
+        }
     }
     /* Selected a new subdirectory as working directory - ignore the command */
     if (isset($_POST['changedirectory'])) {
-	$changedir= $_POST['changedirectory'];
-	if (strlen($changedir) > 0) {
-	    if (@chdir($_SESSION['cwd'] . '/' . $changedir)) {
-		$command = '' ; /* ignore the command */
-		$_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir);
-	    }
-	}
+        $changedir= $_POST['changedirectory'];
+        if (strlen($changedir) > 0) {
+            if (@chdir($_SESSION['cwd'] . '/' . $changedir)) {
+                $command = '' ; /* ignore the command */
+                $_SESSION['cwd'] = realpath($_SESSION['cwd'] . '/' . $changedir);
+            }
+        }
     }
     if (isset($_FILES['uploadfile']['tmp_name'])) {
-	if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
-	    if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
-		echo "CANNOT MOVE {$_FILES['uploadfile']['name']}" ;
-	    }
-	}
+        if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
+            if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
+                echo "CANNOT MOVE {$_FILES['uploadfile']['name']}" ;
+            }
+        }
     }
 
     /* Save content from 'editor' */
     if (isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
-	$filetoedit_handle = fopen($_POST["filetoedit"], "w");
-	fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
-		fclose($filetoedit_handle);
+        $filetoedit_handle = fopen($_POST["filetoedit"], "w");
+        fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
+        fclose($filetoedit_handle);
     }
 
     if (!empty($command)) {
-	/* Save the command for late use in the JavaScript. If the command is
-	 * already in the history, then the old entry is removed before the
-	 * new entry is put into the list at the front. */
-	if (($i = array_search($command, $_SESSION['history'])) !== false)
-	    unset($_SESSION['history'][$i]);
+        /* Save the command for late use in the JavaScript. If the command is
+         * already in the history, then the old entry is removed before the
+         * new entry is put into the list at the front. */
+        if (($i = array_search($command, $_SESSION['history'])) !== false) {
+            unset($_SESSION['history'][$i]);
+        }
 
-	array_unshift($_SESSION['history'], $command);
+        array_unshift($_SESSION['history'], $command);
   
-	/* Now append the command to the output. */
-	$_SESSION['output'] .= htmlspecialchars($ini['settings']['PS1'] . $command, ENT_COMPAT, 'UTF-8') . "\n";
+        /* Now append the command to the output. */
+        $_SESSION['output'] .= htmlspecialchars($ini['settings']['PS1'] . $command, ENT_COMPAT, 'UTF-8') . "\n";
 
-	/* Initialize the current working directory. */
-	if (trim($command) == 'cd') {
-	    $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
-	} elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
-	    /* The current command is a 'cd' command which we have to handle
-	     * as an internal shell command. */
+        /* Initialize the current working directory. */
+        if (trim($command) == 'cd') {
+            $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
+        } elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
+            /* The current command is a 'cd' command which we have to handle
+             * as an internal shell command. */
 
-	    /* if the directory starts and ends with quotes ("), remove them -
-	       allows command like 'cd "abc def"' */
-	    if ((substr($regs[1], 0, 1) == '"') && (substr($regs[1], -1) =='"') ) {
-	      $regs[1] = substr($regs[1], 1);
-	      $regs[1] = substr($regs[1], 0, -1);
-	    }
+            /* if the directory starts and ends with quotes ("), remove them -
+               allows command like 'cd "abc def"' */
+            if ((substr($regs[1], 0, 1) == '"') && (substr($regs[1], -1) =='"') ) {
+                $regs[1] = substr($regs[1], 1);
+                $regs[1] = substr($regs[1], 0, -1);
+            }
 
-	    if ($regs[1]{0} == '/') {
-		/* Absolute path, we use it unchanged. */
-		$new_dir = $regs[1];
-	    } else {
-		/* Relative path, we append it to the current working
-		 * directory. */
-		$new_dir = $_SESSION['cwd'] . '/' . $regs[1];
-	    }
+            if ($regs[1]{0} == '/') {
+                /* Absolute path, we use it unchanged. */
+                $new_dir = $regs[1];
+            } else {
+                /* Relative path, we append it to the current working directory. */
+                $new_dir = $_SESSION['cwd'] . '/' . $regs[1];
+            }
 
-	    /* Transform '/./' into '/' */
-	    while (strpos($new_dir, '/./') !== false)
-		$new_dir = str_replace('/./', '/', $new_dir);
+            /* Transform '/./' into '/' */
+            while (strpos($new_dir, '/./') !== false)
+                $new_dir = str_replace('/./', '/', $new_dir);
 
-	    /* Transform '//' into '/' */
-	    while (strpos($new_dir, '//') !== false)
-		$new_dir = str_replace('//', '/', $new_dir);
+            /* Transform '//' into '/' */
+            while (strpos($new_dir, '//') !== false)
+                $new_dir = str_replace('//', '/', $new_dir);
 
-	    /* Transform 'x/..' into '' */
-	    while (preg_match('|/\.\.(?!\.)|', $new_dir))
-		$new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
+            /* Transform 'x/..' into '' */
+            while (preg_match('|/\.\.(?!\.)|', $new_dir))
+                $new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
 
-	    if ($new_dir == '') $new_dir = '/';
+            if ($new_dir == '') $new_dir = '/';
 
-	    /* Try to change directory. */
-	    if (@chdir($new_dir)) {
-		$_SESSION['cwd'] = $new_dir;
-	    } else {
-		$_SESSION['output'] .= "cd: could not change to: $new_dir\n";
-	    }
+            /* Try to change directory. */
+            if (@chdir($new_dir)) {
+                $_SESSION['cwd'] = $new_dir;
+            } else {
+                $_SESSION['output'] .= "cd: could not change to: $new_dir\n";
+            }
 
-	/* history command (without parameter) - output the command history */
-	} elseif (trim($command) == 'history') {
-		$i = 1 ; 
-		foreach ($_SESSION['history'] as $histline) {
-			$_SESSION['output'] .= htmlspecialchars(sprintf("%5d  %s\n", $i, $histline), ENT_COMPAT, 'UTF-8');;
-			$i++;
-		}
-	/* history command (with parameter "-c") - clear the command history */
-	} elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
-		$_SESSION['history'] = array() ;
-	/* "clear" command - clear the screen */
-	} elseif (trim($command) == 'clear') {
-		clearscreen();
-	} elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
+            /* history command (without parameter) - output the command history */
+        } elseif (trim($command) == 'history') {
+            $i = 1 ; 
+            foreach ($_SESSION['history'] as $histline) {
+                $_SESSION['output'] .= htmlspecialchars(sprintf("%5d  %s\n", $i, $histline), ENT_COMPAT, 'UTF-8');
+                $i++;
+            }
+            /* history command (with parameter "-c") - clear the command history */
+        } elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
+            $_SESSION['history'] = array() ;
+            /* "clear" command - clear the screen */
+        } elseif (trim($command) == 'clear') {
+            clearscreen();
+        } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
 
@@ -292,7 +302,7 @@ if ($_SESSION['authenticated']) {
         
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]+([^;]+)$/', $command, $regs)) {
             /* This is a tiny editor which you can start with 'editor filename'. */
-	    $filetoedit = $regs[1];
+            $filetoedit = $regs[1];
             if ($regs[1]{0} != '/') {
                 /* relative path, add it to the current working directory. */
                 $filetoedit = $_SESSION['cwd'].'/'.$regs[1];
@@ -328,9 +338,9 @@ if ($_SESSION['authenticated']) {
     
             $io = array();
             $p = proc_open($command,
-                           array(1 => array('pipe', 'w'),
-                                 2 => array('pipe', 'w')),
-                           $io);
+                array(1 => array('pipe', 'w'),
+                      2 => array('pipe', 'w')),
+                $io);
 
             /* Read output sent to stdout. */
             while (!feof($io[1])) {
@@ -381,54 +391,54 @@ if ($_SESSION['authenticated']) {
   <script type="text/javascript">
   <?php if ($_SESSION['authenticated'] && ! $showeditor) { ?>
 
-  var current_line = 0;
-  var command_hist = new Array(<?php echo $js_command_hist ?>);
-  var last = 0;
+    var current_line = 0;
+    var command_hist = new Array(<?php echo $js_command_hist ?>);
+    var last = 0;
 
-  function key(e) {
-    if (!e) var e = window.event;
+    function key(e) {
+        if (!e) var e = window.event;
 
-    if (e.keyCode == 38 && current_line < command_hist.length-1) {
-      command_hist[current_line] = document.shell.command.value;
-      current_line++;
-      document.shell.command.value = command_hist[current_line];
+        if (e.keyCode == 38 && current_line < command_hist.length-1) {
+            command_hist[current_line] = document.shell.command.value;
+            current_line++;
+            document.shell.command.value = command_hist[current_line];
+        }
+
+        if (e.keyCode == 40 && current_line > 0) {
+            command_hist[current_line] = document.shell.command.value;
+            current_line--;
+            document.shell.command.value = command_hist[current_line];
+        }
+
     }
 
-    if (e.keyCode == 40 && current_line > 0) {
-      command_hist[current_line] = document.shell.command.value;
-      current_line--;
-      document.shell.command.value = command_hist[current_line];
+    function init() {
+        document.shell.setAttribute("autocomplete", "off");
+        document.shell.output.scrollTop = document.shell.output.scrollHeight;
+        document.shell.command.focus()
     }
-
-  }
-
-  function init() {
-    document.shell.setAttribute("autocomplete", "off");
-    document.shell.output.scrollTop = document.shell.output.scrollHeight;
-    document.shell.command.focus()
-  }
 
   <?php } elseif ($_SESSION['authenticated'] && $showeditor) { ?>
 
-  function init() {
-    document.shell.filecontent.focus();
-  }
+    function init() {
+      document.shell.filecontent.focus();
+    }
 
   <?php } else { ?>
 
-  function init() {
-    document.shell.username.focus();
-  }
+    function init() {
+        document.shell.username.focus();
+    }
 
   <?php } ?>
-  function levelup(d) {
-    document.shell.levelup.value=d ; 
-    document.shell.submit() ;
-  }
-  function changesubdir(d) {
-    document.shell.changedirectory.value=document.shell.dirselected.value ; 
-    document.shell.submit() ;
-  }
+    function levelup(d) {
+        document.shell.levelup.value=d ; 
+        document.shell.submit() ;
+    }
+    function changesubdir(d) {
+        document.shell.changedirectory.value=document.shell.dirselected.value ; 
+        document.shell.submit() ;
+    }
   </script>
 </head>
 
@@ -473,32 +483,32 @@ if (!$_SESSION['authenticated']) {
 <p>Current Working Directory:
 <span class="pwd"><?php
     if ( $showeditor ) {
-	echo htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8') . '</span>';
+        echo htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8') . '</span>';
     } else { /* normal mode - offer navigation via hyperlinks */
-      $parts = explode('/', $_SESSION['cwd']);
+        $parts = explode('/', $_SESSION['cwd']);
      
-      for ($i=1; $i<count($parts); $i=$i+1) {
-        echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
-        echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8');
-      }
-      echo '</span>';
-      /* Now we make a list of the directories. */
-      $dir_handle = opendir($_SESSION['cwd']);
-      /* We store the output so that we can sort it later: */
-      $options = array();
-      /* Run through all the files and directories to find the dirs. */
-      while ($dir = readdir($dir_handle)) {
-	if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
-	  $options[$dir] = "<option value=\"/$dir\">$dir</option>";
-	}
-      }
-      closedir($dir_handle);
-      if (count($options)>0) {
-	ksort($options);
-	echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
-	echo implode("\n", $options);
-	echo '</select>';
-      }
+        for ($i=1; $i<count($parts); $i=$i+1) {
+            echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
+            echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8');
+        }
+        echo '</span>';
+        /* Now we make a list of the directories. */
+        $dir_handle = opendir($_SESSION['cwd']);
+        /* We store the output so that we can sort it later: */
+        $options = array();
+        /* Run through all the files and directories to find the dirs. */
+        while ($dir = readdir($dir_handle)) {
+            if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
+                $options[$dir] = "<option value=\"/$dir\">$dir</option>";
+            }
+         }
+        closedir($dir_handle);
+        if (count($options)>0) {
+            ksort($options);
+            echo '<br><a href="javascript:changesubdir()">Change to subdirectory</a>: <select name="dirselected">';
+            echo implode("\n", $options);
+            echo '</select>';
+        }
     }
 ?>
 <br>
@@ -508,9 +518,9 @@ if (!$_SESSION['authenticated']) {
 <div id="terminal">
 <textarea name="output" readonly="readonly" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
 <?php
-$lines = substr_count($_SESSION['output'], "\n");
-$padding = str_repeat("\n", max(0, $rows+1 - $lines));
-echo rtrim($padding . $_SESSION['output']);
+        $lines = substr_count($_SESSION['output'], "\n");
+        $padding = str_repeat("\n", max(0, $rows+1 - $lines));
+        echo rtrim($padding . $_SESSION['output']);
 ?>
 </textarea>
 <p id="prompt">
