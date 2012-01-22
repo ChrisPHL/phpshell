@@ -191,7 +191,7 @@ if ($_SESSION['authenticated']) {
         $_SESSION['history'] = array();
         $_SESSION['output'] = '';
     }
-    /* Clicked on one of the directory links in the working directory - ignore the command */
+    /* Clicked on one of the subdirectory links - ignore the command */
     if (isset($_POST['levelup'])) {
         $levelup = $_POST['levelup'] ;
         while ($levelup > 0) {
@@ -309,8 +309,9 @@ if ($_SESSION['authenticated']) {
             } ;
             if (is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
                 $showeditor = true;
-                if(file_exists(realpath($filetoedit)))
+                if (file_exists(realpath($filetoedit))) {
                     $filetoedit = realpath($filetoedit);
+                }
             } else {
                 $_SESSION['output'] .= " Syntax: editor filename\n (just regular or not existing files)\n";
             }
@@ -337,10 +338,12 @@ if ($_SESSION['authenticated']) {
                     $command = $ini['aliases'][$token] . substr($command, $length);
                 }
                 $io = array();
-                $p = proc_open($command,
+                $p = proc_open(
+                    $command,
                     array(1 => array('pipe', 'w'),
                           2 => array('pipe', 'w')),
-                    $io);
+                    $io
+                );
 
                 /* Read output sent to stdout. */
                 while (!feof($io[1])) {
@@ -463,13 +466,14 @@ if (!$_SESSION['authenticated']) {
 ?>
 
 <fieldset>
-  <legend>Authentication</legend>
-  <?php
-  if (!empty($username))
-      echo "  <p class=\"error\">Login failed, please try again:</p>\n";
-  else
-      echo "  <p>Please login:</p>\n";
-  ?>
+    <legend>Authentication</legend>
+    <?php
+    if (!empty($username)) {
+        echo "  <p class=\"error\">Login failed, please try again:</p>\n";
+    } else {
+        echo "  <p>Please login:</p>\n";
+    }
+    ?>
 
   <label for="username">Username:</label>
   <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
