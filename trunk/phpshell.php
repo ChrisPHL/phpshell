@@ -11,7 +11,7 @@ define('PHPSHELL_VERSION', '2.3');
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2011 the Phpshell-team
+  Copyright (C) 2000-2012 the Phpshell-team
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -70,7 +70,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2011, the Phpshell-team. Get the latest
+  Copyright &copy; 2000&ndash;2012, the Phpshell-team. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
@@ -261,18 +261,23 @@ if ($_SESSION['authenticated']) {
             }
 
             /* Transform '/./' into '/' */
-            while (strpos($new_dir, '/./') !== false)
+            while (strpos($new_dir, '/./') !== false) {
                 $new_dir = str_replace('/./', '/', $new_dir);
+            }
 
             /* Transform '//' into '/' */
-            while (strpos($new_dir, '//') !== false)
+            while (strpos($new_dir, '//') !== false) {
                 $new_dir = str_replace('//', '/', $new_dir);
+            }
 
             /* Transform 'x/..' into '' */
-            while (preg_match('|/\.\.(?!\.)|', $new_dir))
+            while (preg_match('|/\.\.(?!\.)|', $new_dir)) {
                 $new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
+            }
 
-            if ($new_dir == '') $new_dir = '/';
+            if ($new_dir == '') {
+                $new_dir = '/';
+            }
 
             /* Try to change directory. */
             if (@chdir($new_dir)) {
@@ -535,8 +540,9 @@ if (!$_SESSION['authenticated']) {
 ?>
 </textarea>
 <p id="prompt">
-<?php echo htmlentities($ini['settings']['PS1']); ?><input name="command" type="text"
-                onkeyup="key(event)" size="<?php echo $columns-2 ?>" tabindex="1">
+<span id="ps1"><?php echo htmlentities($ini['settings']['PS1']); ?></span>
+<input name="command" type="text" onkeyup="key(event)"
+       size="<?php echo $columns-strlen($ini['settings']['PS1']); ?>" tabindex="1">
 </p>
 </div>
 
@@ -602,7 +608,7 @@ instruction on how to use PHP Shell.</p>
 
 <hr>
 <address>
-Copyright &copy; 2000&ndash;2011, the Phpshell-team. Get the
+Copyright &copy; 2000&ndash;2012, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
