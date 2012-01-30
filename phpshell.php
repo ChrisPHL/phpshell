@@ -540,7 +540,7 @@ if (!$_SESSION['authenticated']) {
 ?>
 </textarea>
 <p id="prompt">
-<span id="ps1"><?php echo htmlentities($ini['settings']['PS1']); ?></span>
+<span id="ps1"><?php echo htmlspecialchars($ini['settings']['PS1'], ENT_COMPAT, 'UTF-8'); ?></span>
 <input name="command" type="text" onkeyup="key(event)"
        size="<?php echo $columns-strlen($ini['settings']['PS1']); ?>" tabindex="1">
 </p>
