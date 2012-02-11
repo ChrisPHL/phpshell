@@ -299,10 +299,9 @@ if ($_SESSION['authenticated']) {
             /* "clear" command - clear the screen */
         } elseif (trim($command) == 'clear') {
             clearscreen();
-        } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]*$/', $command)) {
+        } elseif (trim($command) == 'editor') {
             /* You called 'editor' without a filename so you get an short help
              * on how to use the internal 'editor' command */
-
                $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
         
         } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]+([^;]+)$/', $command, $regs)) {
@@ -467,6 +466,12 @@ if (!$_SESSION['authenticated']) {
      * attack where one uses the back button in the browser to replay the POST
      * data from a login. */
     $_SESSION['nounce'] = mt_rand();
+
+
+    if (ini_get('safe_mode') && $ini['settings']['safe-mode-warning'] == true ) {
+	echo '<div class="warning">Warning: Safe-mode is enabled. PHP Shell will probably not work correctly.</div>';
+    }
+
 
 ?>
 
