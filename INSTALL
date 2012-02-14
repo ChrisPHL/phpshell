@@ -1,5 +1,5 @@
 INSTALL file for PHP Shell
-Copyright (C) 2000-2011 the Phpshell-team
+Copyright (C) 2000-2012 the Phpshell-team
 Licensed under the GNU GPL.  See the file COPYING for details.
 
 
@@ -85,9 +85,22 @@ Two convenient aliases are already defined:
 General Settings
 ----------------
 
-PHP has just one other setting right now --- the home directory.
-Change this in the '[settings]' section.
+You can define some other settings in the '[settings]' section:
 
+
+home-directory = "Path/to/some/directory": 
+what directory should be considered as home-directory, where should the
+user be after startup and where will he return after a bare "cd" command.
+
+safe-mode-warning = true (or false):
+should PHP Shell print a warning, if PHP safe mode is detected? PHP Shell will 
+probably not work correctly if safe mode is enabled.
+
+PS1 = "string"  (e.g.: "$ "):
+What string should be used as standard prompt string.
+
+file-upload = false (or true):
+do you want to use the new file-upload feature?
 
 
 Bugs?  Comments?

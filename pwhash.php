@@ -1,7 +1,7 @@
 <?php
 /*
  * pwhash.php file for PHP Shell
- * Copyright (C) 2005-2011 the Phpshell-team
+ * Copyright (C) 2005-2012 the Phpshell-team
  * Licensed under the GNU GPL. See the file COPYING for details.
  *
  */
