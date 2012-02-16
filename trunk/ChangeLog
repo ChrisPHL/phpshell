@@ -1,3 +1,13 @@
+Phpshell 2.4
+  * Commands with HTML entities (e.g.: echo "&uuml;") were displayed 
+    encoded in the history-output
+  * Updated list of not allowed usernames (restriction of parse_ini_file())
+  * phpshell stopped working, when the current directory was removed
+    or made unreadable (by the user or another process).
+  * Fixed correct encoding of prompt string.
+  * Safe mode warning was not displayed.
+
+
 Phpshell 2.3
   * added file upload feature (not enabled by default)
   * fixed a strange UTF-8 bug
