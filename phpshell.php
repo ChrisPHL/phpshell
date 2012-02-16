@@ -1,6 +1,6 @@
 <?php // -*- coding: utf-8 -*-
 
-define('PHPSHELL_VERSION', '2.3');
+define('PHPSHELL_VERSION', '2.4');
 /*
 
   **************************************************************
@@ -469,7 +469,7 @@ if (!$_SESSION['authenticated']) {
 
 
     if (ini_get('safe_mode') && $ini['settings']['safe-mode-warning'] == true ) {
-	echo '<div class="warning">Warning: Safe-mode is enabled. PHP Shell will probably not work correctly.</div>';
+        echo '<div class="warning">Warning: Safe-mode is enabled. PHP Shell will probably not work correctly.</div>';
     }
 
 
