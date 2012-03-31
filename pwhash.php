@@ -41,6 +41,9 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 <body>
 
 <h1>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
+<p>
+This password hasher creates salted and hashed password entries for your PHP shell config files.
+</p>
 
 <form action="<?php $_SERVER['PHP_SELF']; ?>" method="post">
 
@@ -63,6 +66,9 @@ if ($username == '' || $password == '') {
     echo '  <p><i>Enter a username and a password and update.</i></p><br/>';
 } else {
     $u = strtolower($username);
+    /* some reserved words are not allowed as username, because there is a 
+       restriction in parse_ini_string() 
+       (http://php.net/manual/en/function.parse-ini-string.php) */
     if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u)
         || in_array($u, array('null','yes','no','true','false','on','off', 'none'))
     ) {
@@ -85,6 +91,7 @@ END;
         $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
 
         echo "<pre>$u = &quot;$hash&quot;</pre>\n";
+        echo "<p>After you have done that, you can return to <a href=\"phpshell.php\">phpshell.php</a> and login.</p>\n";
     }
 }
 ?>
