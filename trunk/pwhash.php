@@ -56,8 +56,8 @@ This password hasher creates salted and hashed password entries for your PHP she
   <label for="password">Password:</label>
   <input name="password" id="password" type="password" 
          value="<?php echo htmlspecialchars($password) ?>"/>
-  <input type="radio" name="showhidepass" value="show" onclick="document.getElementById('password').type='text'">Show Password</input> / 
-  <input type="radio" name="showhidepass" value="hide" onclick="document.getElementById('password').type='password'" checked="checked">Hide Password</input>
+  <input type="radio" name="showhidepass" value="show" onclick="document.getElementById('password').type='text'"/>Show Password / 
+  <input type="radio" name="showhidepass" value="hide" onclick="document.getElementById('password').type='password'" checked="checked"/>Hide Password
  
 </fieldset>
 
