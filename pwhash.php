@@ -85,10 +85,20 @@ END;
         echo "<p>Write the following line into <tt>config.php</tt> "; 
         echo "in the <tt>[users]</tt> section:</p>\n";
 
-        if ( function_exists('sha1') ) {
-            $fkt = 'sha1' ; 
+        /* define sha512 function if possible */
+        if (function_exists('hash')) {
+            if ( in_array('sha512', hash_algos())) {
+                function sha512($plaintext) {
+                    return hash("sha512", $plaintext);
+                }
+            }
+        }
+        if ( function_exists('sha512') ) {
+            $fkt = 'sha512' ;
+        } elseif ( function_exists('sha1') ) {
+            $fkt = 'sha1' ;
         } else {
-            $fkt = 'md5' ; 
+            $fkt = 'md5' ;
         } ;
         $salt = dechex(mt_rand());
         $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);

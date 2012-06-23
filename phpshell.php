@@ -116,6 +116,17 @@ function stripslashes_deep($value)
     }
 }
 
+/* define sha512-function - if possible */
+if (function_exists('hash')) {
+    if ( in_array('sha512', hash_algos())) {
+        function sha512($plaintext) {
+            return hash("sha512", $plaintext);
+        }
+    }
+}
+
+
+
 if (get_magic_quotes_gpc()) {
     $_POST = stripslashes_deep($_POST);
 }
