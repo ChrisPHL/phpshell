@@ -165,12 +165,14 @@ if (isset($_POST['clear'])) {
 }
 
 /* Attempt authentication. */
+$clearpasswordwarning = false ;
 if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] 
     && isset($ini['users'][$username])
 ) {
     if (strchr($ini['users'][$username], ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $_SESSION['authenticated'] = ($ini['users'][$username] == $password);
+        $clearpasswordwarning = true ;
     } else {
         list($fkt, $salt, $hash) = explode(':', $ini['users'][$username]);
         $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
@@ -497,6 +499,19 @@ if (!$_SESSION['authenticated']) {
 <?php } else { /* Authenticated. */ ?>
 <fieldset>
   <legend><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
+<?php 
+    if ($clearpasswordwarning == true) {
+        $clearpasswordwarning = false ; /* display warning only ONCE after login */
+        echo <<<END
+<div class="warning">Warning: Your account uses an unhashed password, 
+stored in cleartext in config.php.<br>
+Please change it to an hashed and salted (more secure) password using 
+<a href="pwhash.php">pwhash.php</a>.<br>
+(This warning is displayed only once after login. 
+You may continue using phpshell now.)</div>
+END;
+    }
+?>
 <p>Current Working Directory:
 <span class="pwd"><?php
     if ( $showeditor ) {
