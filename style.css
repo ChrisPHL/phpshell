@@ -25,11 +25,16 @@ div#terminal {
   margin-top: 0.5em;
 }
 
-div#terminal textarea { 
-  font-size: 100%;
+div#terminal pre, div#terminal textarea { 
   width: 100%;
   border: none;
+  margin: 0;
 }
+div#terminal pre, div#terminal textarea, div#terminal input { 
+  font-size: 120%;
+  line-height: 2ex;
+}
+
 
 p {
   margin-top: 0.5em;

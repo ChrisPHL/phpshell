@@ -1,3 +1,31 @@
+2012-06-29  Jan Kanis
+  * PHP Shell now implements protection against Cross-Site Request Forgery attacks (CSRF). A security critical app like this should have implemented that a long time ago. 
+  * change terminal output from a <textarea> to a <pre>, so the output doesn't get sent back to the server every POST.
+  * Make sure editors 'Exit without Saving' also works if javascript is disabled. 
+  * Add 'logout' button to the error page so you can reset your session
+
+2012-06-28  Jan Kanis
+  * if 'execute command' is clicked while a file to upload is selected, the file is no longer uploaded. Upload and terminal are now separate forms. 
+  * add clear also as a builtin.
+  * Don't crash if the current directory has unreadable entries
+  * fix some small bugs in the editor
+  * replace htmlentities with htmlescape everywhere
+
+2012-06-28  Jan Kanis
+  * Merged changes from my private branch and trunk. Some features were already in both branches.
+
+2010-09-22  Jan Kanis <jan.code@jankanis.nl>
+  In my private branch: 
+  * Refactored the code to handle builtins to make it more generic
+  * Added a 'download' builtin
+  * Changed the directory handling. 'cd' is now no longer a buitin but is handled by the shell itself. When the shell is done it sends its working directory back to php over a special file descriptor. 
+  * Changed all calls to file handling functions with shell calls to work with the new directory handling and to be no longer hindered by php's open_basedir setting. 
+  * Correctly encode \0 characters in shell output.
+  * Removed charset parameter from htmlspecialchars, to handle cases where the output isn't valid UTF-8. 
+  * AUTHORS: Added myself
+  * pwhash.php: Set sha1 as default hash.
+  * .htaccess: New file.
+
 Phpshell 2.4
   * Commands with HTML entities (e.g.: echo "&uuml;") were displayed 
     encoded in the history-output
@@ -26,7 +54,6 @@ Phpshell 2.3
 
 2010-11-05  Wolfgang Dautermann
     * Use SHA1 password hashing if possible. Changed project links to http://phpshell.sourceforge.net/
-
 2010-01-30  Natan Bueno <natan.bueno@gmail.com>
     * phpshell.php
 	Added AddOn to editor "vim".  

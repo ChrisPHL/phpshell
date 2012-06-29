@@ -41,10 +41,8 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 {
     /* The @-operator (used with chdir() below) temporarely makes
      * error_reporting() return zero, and we don't want to die in that case.
-     * We do note the error in the output, though. */
-    if (error_reporting() == 0) {
-        $_SESSION['output'] .= $errstr . "\n";
-    } else {
+     * That happens mostly in cases where we can just ignore it. */
+    if (error_reporting() != 0) {
         die('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -61,6 +59,10 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <p><b>' . $errstr . '</b></p>
   <p>in <b>' . $errfile . '</b>, line <b>' . $errline . '</b>.</p>
 
+  <form name="shell" enctype="multipart/form-data" action="" method="post"><p>
+    If you want to try to reset your session: 
+    <input type="submit" name="logout" value="Logout" style="display: inline;">
+  </p></form>
   <hr>
 
   <p>Please consult the <a href="README">README</a>, <a
@@ -85,35 +87,37 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 set_error_handler('error_handler');
 
 
-function logout()
-{
-    /* Empty the session data, except for the 'authenticated' entry which the
-     * rest of the code needs to be able to check. */
-    $_SESSION = array('authenticated' => false);
-
-    /* Unset the client's cookie, if it has one. */
-    //    if (isset($_COOKIE[session_name()]))
-    //        setcookie(session_name(), '', time()-42000, '/');
-
-    /* Destroy the session data on the server.  This prevents the simple
-     * replay attack where one uses the back button to re-authenticate using
-     * the old POST data since the server wont know the session then. */
-    //    session_destroy();
-}
-
 /* Clear screen */
-function clearscreen() 
-{
+function builtin_clear($arg) {
     $_SESSION['output'] = '';
 }
 
-function stripslashes_deep($value)
-{
+function stripslashes_deep($value) {
     if (is_array($value)) {
         return array_map('stripslashes_deep', $value);
     } else {
         return stripslashes($value);
     }
+}
+
+/* In php older than 4.0.6, mb_convert_encoding does not exist, so we may pass
+ * through bytes that are not valid utf-8. Well, no fixing that, php is not 
+ * really good in unicode anyway and in those very old versions all bets are 
+ * just off. (Unless someone wants to try to implement all those mb_* functions
+ * in plain php, but good luck) Just use a slightly less archaic version or 
+ * don't print non-utf8 bytes to the terminal. And anyway browsers can deal 
+ * with any strange content thrown at them. */
+function htmlescape($value) {
+    // exists since php 4.0.6
+    if (function_exists('mb_convert_encoding')) {
+        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
+        $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+    }
+    return str_replace("\0", "&#000;", 
+    // The encoding parameter was only added in php 4.1, but the default will 
+    // work for us as all characters that are important for html are in the 
+    // ascii range. 
+        htmlspecialchars($value, ENT_COMPAT));
 }
 
 /* define sha512-function - if possible */
@@ -125,6 +129,139 @@ if (function_exists('hash')) {
     }
 }
 
+/* even though proc_open has a $cwd argument, we don't use it because php 4 
+ * doesn't support it. */
+function add_dir($cmd, $dir){
+    return "cd ".escapeshellarg($dir)."\n".$cmd;
+}
+
+/* executes a command in the given working directory and returns output */
+function exec_cwd($cmd, $directory) {   
+    list($status, $stdout, $stderr) = exec_command($cmd, $directory);
+    return $stdout;
+}
+
+/* return exit code of command */
+function exec_test_cwd($cmd, $directory) {
+    list($status, $stderr, $stderr) = exec_command($cmd, $directory);
+    return $status;
+}
+
+/* 
+ * Where the real magic happens
+ *
+ * $mergeoutputs says if the command's stdout and stderr should be separated 
+ * or merged into a single string.
+ * $fd9 adds an extra pipe on file descriptor 9 to the process, used for out 
+ * of band communication.
+ * The return value is an array containing array(status, stdout[, stderr][, fd9]) 
+ * with the last two possibly being omitted. 
+ */
+function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
+
+    $io = array();
+    $pipes = array(1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
+    if($fd9) $pipes[9] = array('pipe', 'w');
+    $p = proc_open(add_dir($cmd, $_SESSION['cwd']), $pipes, $io);
+
+    /* 
+     * Read output using stream_select. Reading the pipes sequentially could
+     * potentially cause a deadlock if the subshell would write a large 
+     * ammount of data to pipe 2 (stderr), while we are reading pipe 1. The
+     * subshell would then block waiting for us to read pipe 2, and we would
+     * block waiting for the subshell to write to pipe 1, resulting in a 
+     * deadlock.
+     */
+
+    // set all streams to nonblocking mode, so we can read them all at once 
+    // below
+    foreach($io as $pipe) {
+        stream_set_blocking($pipe, 0);
+    }
+
+    $out = $err = $out9 = '';
+
+    while (True) {
+        // we need to recreate $read each time, because it gets modified in
+        // stream_select. Also, we just want to select on those pipes that are
+        // not closed yet. 
+        $read = array();
+        foreach($io as $pipe){
+            if(!feof($pipe))
+                $read[] = $pipe;
+        }
+
+        // break out if nothing more to read
+        if(count($read) == 0) 
+            break;
+
+        // define these because we must pass something by reference
+        $write = null;
+        $except = null;
+
+        // wait for the subshell to write to any of the pipes
+        stream_select($read, $write, $except, 10000);
+
+        // and read them. We don't bother to see which one is ready, we just 
+        // try them all. That's why we put them in nonblocking mode. 
+        $out .= fgets($io[1]);
+        if ($mergeoutput) {
+            $out .= fgets($io[2]);
+        } else {
+            $err .= fgets($io[2]);
+        }
+        if ($fd9) {
+            $out9 .= fgets($io[9]);
+        }
+    }
+
+    fclose($io[1]);
+    fclose($io[2]);
+    if ($fd9) fclose($io[9]);
+    $status = proc_close($p);
+    $ret = array($status, $out);
+    if (!$mergeoutput) $ret[] = $err;
+    if ($fd9) $ret[] = $out9;    
+    return $ret;
+}
+
+function setdefault(&$var, $options) {
+    foreach($options as $opt) {
+        if ($opt != '') {
+            $var = $opt;
+            return;
+        }
+    }
+}
+
+function reset_csrf_token() {
+    // first try /dev/urandom, as it provides real cryptographically strong 
+    // entropy
+    $fp = @fopen('/dev/urandomm','rb');
+    if ($fp !== FALSE) {
+        if (function_exists('stream_set_write_buffer')) {
+	        # Try not to waste the system's entropy pool, so disable buffering
+	        stream_set_write_buffer($fp, 0);
+        }
+        $rand = bin2hex(@fread($fp,16));
+        @fclose($fp);
+    }
+    // mt_rand is not really cryptographically secure, but it's better than 
+    // nothing. There shouldn't be any (easily visible) difference between the 
+    // generated tokens using mt_rand or /dev/urandom.
+    if (!isset($rand) || strlen($rand) < 32) {
+        $rand = md5('randomsalt:op9o6PIeGO5oSdVrnB5miw42/SHX9IV/c+cJHU2YDww'.mt_rand());
+    }
+    $_SESSION['csrf_token'] = $rand;
+}
+
+/* initialize everything */
+
+session_start();
+
+if(!isset($_SESSION['csrf_token'])) {
+    reset_csrf_token();
+}
 
 
 if (get_magic_quotes_gpc()) {
@@ -137,15 +274,20 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 $nounce   = isset($_POST['nounce'])   ? $_POST['nounce']   : '';
 
 $command  = isset($_POST['command'])  ? $_POST['command']  : '';
-$rows     = isset($_POST['rows'])     ? $_POST['rows']     : 24;
-$columns  = isset($_POST['columns'])  ? $_POST['columns']  : 80;
 
-if (!preg_match('/^[[:digit:]]+$/', $rows)) { 
-    $rows=24 ; 
+setdefault($_SESSION['env']['rows'], array(@$_POST['rows'], @$_SESSION['env']['rows'], 24));
+setdefault($_SESSION['env']['columns'], array(@$_POST['columns'], @$_SESSION['env']['columns'], 80));
+
+if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['rows'])) { 
+    $_SESSION['env']['rows']=24 ; 
 } 
-if (!preg_match('/^[[:digit:]]+$/', $columns)) {
-    $columns=80 ;
+if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['columns'])) {
+    $_SESSION['env']['columns']=80 ;
 }
+$rows = $_SESSION['env']['rows'];
+$columns = $_SESSION['env']['columns'];
+
+
 /* Load the configuration. */
 $ini = parse_ini_file('config.php', true);
 
@@ -154,32 +296,221 @@ if (empty($ini['settings'])) {
 }
 
 /* Default settings --- these settings should always be set to something. */
-$default_settings = array('home-directory' => '.',
-                          'PS1'            => '$ ');
+$default_settings = array(
+    'home-directory'        => '.',
+    'safe-mode-warning'     => True,
+    'file-upload'           => False,
+    'PS1'                   => '$ ');
 $showeditor = false;
+$writeaccesswarning = false;
 
 /* Merge settings. */
 $ini['settings'] = array_merge($default_settings, $ini['settings']);
 
-session_start();
 
-/* Delete the session data if the user requested a logout. This leaves
- * the session cookie at the user, but this is not important since we
- * authenticates on $_SESSION['authenticated']. */
-if (isset($_POST['logout'])) {
-    logout();
+function runcommand($cmd) {
+    global $rows, $columns, $ini;
+
+    $extra_env = 
+        "export ROWS=$rows\n".
+        "export COLUMNS=$columns\n";
+
+    $aliases = '';
+    foreach($ini['aliases'] as $al => $expansion){
+        $aliases .= "alias $al=".escapeshellarg($expansion)."\n";
+    }
+
+    $command = 
+        $extra_env.
+        $aliases.
+        $cmd." \n".   # extra space in case the command ends in \
+        "pwd >&9\n";
+
+    list($status, $out, $newcwd) = exec_command($command, $_SESSION['cwd'], True, True);
+
+    // trim because 'pwd' adds a newline
+    if(strlen($newcwd) > 0 && $newcwd{0} == '/')
+        $_SESSION['cwd'] = trim($newcwd);
+
+    $_SESSION['output'] .= htmlescape($out);
+}    
+
+
+function builtin_download($arg) {
+    /* download specified file */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: download filename\n(you forgot filename)\n";
+        return;
+    }
+
+    /* test if file exists */
+    if(exec_test_cwd("test -e ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+        $_SESSION['output'] .= "download: file not found: '$arg'\n";
+        return;
+    }
+
+    if(exec_test_cwd("test -r ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+        $_SESSION['output'] .= "download: Permission denied for file '$arg'\n";
+        return;
+    }
+
+    $filesize = trim(exec_cwd("stat -c%s ".escapeshellarg($arg), $_SESSION['cwd']));
+
+    // We can't use exec_command because we need access to the pipe
+    $io = array();
+    $p = proc_open(add_dir('cat '.escapeshellarg($arg), $_SESSION['cwd']), 
+                   array(1 => array('pipe', 'w')), $io);
+
+    /* Passing a filename correctly in a content disposition header is nigh 
+     * impossible. If the filename is unsafe, we just pass nothing and let the
+     * user choose himself. 
+     * The 'rules' are at http://tools.ietf.org/html/rfc6266#appendix-D
+     * If problematic characters are encountered we use the filename*= form, 
+     * user agents that don't support that don't get a filename hint. 
+     */
+    $basename = basename($arg);
+    // match non-ascii, non printable, and '%', '\', '"'. 
+    if (preg_match('/[\x00-\x1F\x80-\xFF\x7F%\\\\"]/', $basename)) {
+        // Assume UTF-8 on the file system, since there's no way to check
+        $filename_hdr = "filename*=UTF-8''".rawurlencode($basename).';';
+    } else {
+        $filename_hdr = 'filename="'.$basename.'";';
+    }
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; '.$filename_hdr);
+    header('Content-Transfer-Encoding: binary');
+    header('Expires: 0');
+    header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0');
+    if($filesize) header('Content-Length: '.$filesize);
+
+    /* Read output from cat. */
+    fpassthru($io[1]);
+    
+    fclose($io[1]);
+    proc_close($p);
+
+    die();
+    return;
 }
 
+/* This is a tiny editor which you can start calling 'editor file'*/
+function builtin_editor($arg) {
+    global $editorcontent, $filetoedit, $showeditor, $writeaccesswarning;
+
+    if($arg == '') {
+        $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
+        return;
+    }
+
+    $escarg = escapeshellarg($arg);
+    $filetoedit = $arg;
+
+    if(exec_test_cwd("test -e $escarg", $_SESSION['cwd']) != 0) {
+        // file does not exist
+        $editorcontent = '';
+        $showeditor = true;
+
+        // test current directory for write access
+        if(exec_test_cwd("test -w .", $_SESSION['cwd']) != 0) {
+            $writeaccesswarning = true;
+        }
+
+    } else {
+
+        if(exec_test_cwd("test -f $escarg", $_SESSION['cwd']) != 0) {
+            $_SESSION['output'] .= "editor: file '$arg' not found or not a regular file\n";
+            return;
+        }
+
+        if(exec_test_cwd("test -r $escarg", $_SESSION['cwd']) != 0) {
+            $_SESSION['output'] .= "editor: Permission denied for file '$arg'\n";
+            return;
+        }
+
+        // test write access
+        if(exec_test_cwd("test -w $escarg", $_SESSION['cwd']) != 0) {
+            $writeaccesswarning = true;
+        }
+
+        list($status, $output, $error) = exec_command("cat $escarg", $_SESSION['cwd']);
+        if($status != 0) {
+            $_SESSION['output'] .= "editor: error: ".htmlescape($error)."\n";
+        } else {
+            $editorcontent = htmlescape($output);
+            $showeditor = true;
+        }
+    }
+
+    return;
+}
+
+function builtin_logout($arg = null) {
+    /* Empty the session data, except for the 'authenticated' entry which the
+     * rest of the code needs to be able to check. */
+    $_SESSION = array('authenticated' => false);
+
+    /* Reset the csrf token, as otherwise the login form won't render */
+    reset_csrf_token();
+
+    /* Unset the client's cookie, if it has one. */
+//    if (isset($_COOKIE[session_name()]))
+//        setcookie(session_name(), '', time()-42000, '/');
+
+    /* Destroy the session data on the server.  This prevents the simple
+     * replay attach where one uses the back button to re-authenticate using
+     * the old POST data since the server wont know the session then.*/
+//    session_destroy();
+}
+
+function builtin_history($arg) {
+    /* history command (without parameter) - output the command history */
+    if (trim($arg) == '') {
+        $i = 1;
+        foreach ($_SESSION['history'] as $histline) {
+            $_SESSION['output'] .= htmlescape(sprintf("%5d  %s\n", $i, $histline));
+            $i++;
+        }
+    /* history command (with parameter "-c") - clear the command history */
+    } elseif (preg_match('/^[[:blank:]]*-c[[:blank:]]*$/', $arg)) {
+        $_SESSION['history'] = array() ;
+    }
+}
+
+
+/* the builtins this shell recognizes */
+$builtins = array(
+    'download' => 'builtin_download',
+    'editor' => 'builtin_editor',
+    'exit' => 'builtin_logout',
+    'logout' => 'builtin_logout',
+    'history' => 'builtin_history',
+    'clear' => 'builtin_clear');
+
+
+/* Delete the session data if the user requested a logout. This leaves the
+ * session cookie at the user, but this is not important since we
+ * authenticates on $_SESSION['authenticated']. 
+ * Logging out is allowed without the CSRF token. */
+if (isset($_POST['logout'])) {
+    builtin_logout('');
+} 
+elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSION['csrf_token']) {
+    // Whoops, a possible cross-site request forgery attack!
+    die('Error: CSRF token failure, exiting');
+}
+    
 /* Clear screen if submitted */
 if (isset($_POST['clear'])) {
-    clearscreen();
+    builtin_clear('');
 }
 
 /* Attempt authentication. */
 $clearpasswordwarning = false ;
-if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] 
-    && isset($ini['users'][$username])
-) {
+if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
+    isset($ini['users'][$username])) {
     if (strchr($ini['users'][$username], ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $_SESSION['authenticated'] = ($ini['users'][$username] == $password);
@@ -197,6 +528,7 @@ if (!isset($_SESSION['authenticated'])) {
     $_SESSION['authenticated'] = false;
 }
 
+
 if ($_SESSION['authenticated']) {  
     /* Initialize the session variables. */
     if (empty($_SESSION['cwd'])) {
@@ -204,6 +536,7 @@ if ($_SESSION['authenticated']) {
         $_SESSION['history'] = array();
         $_SESSION['output'] = '';
     }
+
     /* Clicked on one of the subdirectory links - ignore the command */
     if (isset($_POST['levelup'])) {
         $levelup = $_POST['levelup'] ;
@@ -232,161 +565,85 @@ if ($_SESSION['authenticated']) {
     }
 
     /* Save content from 'editor' */
-    if (isset($_POST["filetoedit"]) && ($_POST["filetoedit"] != "")) {
-        $filetoedit_handle = fopen($_POST["filetoedit"], "w");
-        fputs($filetoedit_handle, str_replace("%0D%0D%0A", "%0D%0A", $_POST["filecontent"]));
-        fclose($filetoedit_handle);
+    if (isset($_POST['savefile']) && isset($_POST["filetoedit"]) && $_POST["filetoedit"] != "") {
+        $io = array();
+        $p = proc_open(add_dir('cat >'.escapeshellarg($_POST['filetoedit']), $_SESSION['cwd']), 
+                       array(0 => array('pipe', 'r'), 2 => array('pipe', 'w')), $io);
+
+        /*
+         * I'm not entirely sure this approach will not deadlock, but I think 
+         * it is ok. If the subshell fails it will exit and our write 
+         * fails. There is one assumption though: the subshell will not block
+         * on writing to it's stderr while we are not reading it. As long as 
+         * the error message is small enough to fit in the kernel buffer, as 
+         * is expected with sh/cat redirect errors, this is no problem, but if
+         * that assumption does not hold we will have to do some uglier tricks
+         * using stream_select and friends. 
+         * 
+         * IMPORTANT ASSUMPTION: THE ERROR MESSAGE IS SMALL ENOUGH TO FIT IN 
+         * THE KERNELS BUFFER OF THE SUBSHELLS STDOUT.
+         */
+
+        /* The docs are not entirely clear whether fwrite can write only part
+         * of the string to a pipe, but testing shows that php internally 
+         * splits up large writes into smaller ones, so normally everything 
+         * gets written. */
+        $content = str_replace("\r\n", "\n", $_POST["filecontent"]);
+        $status = fwrite($io[0], $content);
+        /* We can't really rely on the number of bytes written if 
+        $status<strlen($_POST['filecontent']), because the pipe has a kernel 
+        buffer of a few kilobytes. So we don't show the number of actually 
+        written bytes in the error message, just that something went wrong. */
+        if ($status === FALSE or $status < strlen($content)) {
+            $_SESSION['output'] .= "editor: Error saving editor content to ".htmlescape($_POST['filetoedit'])."\n";
+        }
+        // close immediately to let the shell know we are done. 
+        fclose($io[0]);
+        // also read any error messages
+        $errmsg = '';
+        while (!feof($io[2])) {
+            $errmsg .= fread($io[2], 8192);
+        }
+        if(trim($errmsg) != '') {
+            $_SESSION['output'] .= htmlescape('editor: '.$errmsg);
+        }
+        fclose($io[2]);
+        $status = proc_close($p);
+        if ($status != 0) {
+            $_SESSION['output'] .= "editor: Error: subprocess exited with status $status.\n";
+        }
     }
 
-    if (!empty($command)) {
-        /* Save the command for late use in the JavaScript. If the command is
+    /* execute the command */
+    if (trim($command) != '') {
+        /* Save the command for later use in the JavaScript.  If the command is
          * already in the history, then the old entry is removed before the
          * new entry is put into the list at the front. */
         if (($i = array_search($command, $_SESSION['history'])) !== false) {
             unset($_SESSION['history'][$i]);
         }
-
+        
         array_unshift($_SESSION['history'], $command);
   
         /* Now append the command to the output. */
-        $_SESSION['output'] .= htmlspecialchars($ini['settings']['PS1'] . $command, ENT_COMPAT, 'UTF-8') . "\n";
+        $_SESSION['output'] .= htmlescape($ini['settings']['PS1'] . $command) . "\n";
 
-        /* Initialize the current working directory. */
-        if (trim($command) == 'cd') {
-            $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
-        } elseif (preg_match('/^[[:blank:]]*cd[[:blank:]]+([^;]+)$/', $command, $regs)) {
-            /* The current command is a 'cd' command which we have to handle
-             * as an internal shell command. */
+        // append a space to $command to guarantee the last capture group 
+        // matches. It's removed afterward. 
+        preg_match('/^[[:blank:]]*([^[:blank:]]+)([[:blank:]].*)$/', $command.' ', $regs);
+        $cmd_name = $regs[1];
+        $arg = trim($regs[2]);
+        if (strlen($arg) > 1 && $arg{0} === substr($arg, -1) && ($arg{0} == '"' || $arg{0} == "'")) {
+            $arg = substr($arg, 1, -1);
+        }
 
-            /* if the directory starts and ends with quotes ("), remove them -
-               allows command like 'cd "abc def"' */
-            if ((substr($regs[1], 0, 1) == '"') && (substr($regs[1], -1) =='"') ) {
-                $regs[1] = substr($regs[1], 1);
-                $regs[1] = substr($regs[1], 0, -1);
-            }
-
-            if ($regs[1]{0} == '/') {
-                /* Absolute path, we use it unchanged. */
-                $new_dir = $regs[1];
-            } else {
-                /* Relative path, we append it to the current working directory. */
-                $new_dir = $_SESSION['cwd'] . '/' . $regs[1];
-            }
-
-            /* Transform '/./' into '/' */
-            while (strpos($new_dir, '/./') !== false) {
-                $new_dir = str_replace('/./', '/', $new_dir);
-            }
-
-            /* Transform '//' into '/' */
-            while (strpos($new_dir, '//') !== false) {
-                $new_dir = str_replace('//', '/', $new_dir);
-            }
-
-            /* Transform 'x/..' into '' */
-            while (preg_match('|/\.\.(?!\.)|', $new_dir)) {
-                $new_dir = preg_replace('|/?[^/]+/\.\.(?!\.)|', '', $new_dir);
-            }
-
-            if ($new_dir == '') {
-                $new_dir = '/';
-            }
-
-            /* Try to change directory. */
-            if (@chdir($new_dir)) {
-                $_SESSION['cwd'] = $new_dir;
-            } else {
-                $_SESSION['output'] .= "cd: could not change to: $new_dir\n";
-            }
-
-            /* history command (without parameter) - output the command history */
-        } elseif (trim($command) == 'history') {
-            $i = 1 ; 
-            foreach ($_SESSION['history'] as $histline) {
-                $_SESSION['output'] .= htmlspecialchars(sprintf("%5d  %s\n", $i, $histline), ENT_COMPAT, 'UTF-8');
-                $i++;
-            }
-            /* history command (with parameter "-c") - clear the command history */
-        } elseif (preg_match('/^[[:blank:]]*history[[:blank:]]*-c[[:blank:]]*$/', $command)) {
-            $_SESSION['history'] = array() ;
-            /* "clear" command - clear the screen */
-        } elseif (trim($command) == 'clear') {
-            clearscreen();
-        } elseif (trim($command) == 'editor') {
-            /* You called 'editor' without a filename so you get an short help
-             * on how to use the internal 'editor' command */
-               $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
-        
-        } elseif (preg_match('/^[[:blank:]]*editor[[:blank:]]+([^;]+)$/', $command, $regs)) {
-            /* This is a tiny editor which you can start with 'editor filename'. */
-            $filetoedit = $regs[1];
-            if ($regs[1]{0} != '/') {
-                /* relative path, add it to the current working directory. */
-                $filetoedit = $_SESSION['cwd'].'/'.$regs[1];
-            } ;
-            if (is_file(realpath($filetoedit)) || ! file_exists($filetoedit)) {
-                $showeditor = true;
-                if (file_exists(realpath($filetoedit))) {
-                    $filetoedit = realpath($filetoedit);
-                }
-            } else {
-                $_SESSION['output'] .= " Syntax: editor filename\n (just regular or not existing files)\n";
-            }
-
-        } elseif ((trim($command) == 'exit') || (trim($command) == 'logout')) {
-            logout();
+        if(array_key_exists($cmd_name, $builtins)) {
+            $builtins[$cmd_name]($arg);
         } else {
-
-            /* The command is not an internal command, so we execute it after
-             * changing the directory and save the output. */
-            if (@chdir($_SESSION['cwd'])) {
-
-                // We canot use putenv() in safe mode.
-                if (!ini_get('safe_mode')) {
-                    // Advice programs (ls for example) of the terminal size.
-                    putenv('ROWS=' . $rows);
-                    putenv('COLUMNS=' . $columns);
-                }
-
-                /* Alias expansion. */
-                $length = strcspn($command, " \t");
-                $token = substr($command, 0, $length);
-                if (isset($ini['aliases'][$token])) {
-                    $command = $ini['aliases'][$token] . substr($command, $length);
-                }
-                $io = array();
-                $p = proc_open(
-                    $command,
-                    array(1 => array('pipe', 'w'),
-                          2 => array('pipe', 'w')),
-                    $io
-                );
-
-                /* Read output sent to stdout. */
-                while (!feof($io[1])) {
-                    $line=fgets($io[1]);
-                    if (function_exists('mb_convert_encoding')) {
-                        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                        $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
-                    }
-                    $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
-                }
-                /* Read output sent to stderr. */
-                while (!feof($io[2])) {
-                    $line=fgets($io[2]);
-                    if (function_exists('mb_convert_encoding')) {
-                        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-                        $line = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
-                    }
-                    $_SESSION['output'] .= htmlspecialchars($line, ENT_COMPAT, 'UTF-8');
-                }
-            
-                fclose($io[1]);
-                fclose($io[2]);
-                proc_close($p);
-            } else { /* It was not possible to change to working directory. Do not execute the command */
-                $_SESSION['output'] .= "PHP Shell could not change to working directory. Your command was not executed.\n";
-            }
+            /* The command is not an internal command, so we execute it and 
+             * save the output. We use the full input, not the one parsed with
+             * the regex above, and let the shell parse it. */
+            runcommand($command);
         }
     }
 
@@ -414,44 +671,44 @@ if ($_SESSION['authenticated']) {
   <script type="text/javascript">
   <?php if ($_SESSION['authenticated'] && ! $showeditor) { ?>
 
-    var current_line = 0;
-    var command_hist = new Array(<?php echo $js_command_hist ?>);
-    var last = 0;
+  var current_line = 0;
+  var command_hist = new Array(<?php echo $js_command_hist ?>);
+  var last = 0;
 
-    function key(e) {
-        if (!e) var e = window.event;
+  function key(e) {
+    if (!e) var e = window.event;
 
-        if (e.keyCode == 38 && current_line < command_hist.length-1) {
-            command_hist[current_line] = document.shell.command.value;
-            current_line++;
-            document.shell.command.value = command_hist[current_line];
-        }
-
-        if (e.keyCode == 40 && current_line > 0) {
-            command_hist[current_line] = document.shell.command.value;
-            current_line--;
-            document.shell.command.value = command_hist[current_line];
-        }
-
+    if (e.keyCode == 38 && current_line < command_hist.length-1) {
+      command_hist[current_line] = document.shell.command.value;
+      current_line++;
+      document.shell.command.value = command_hist[current_line];
     }
 
-    function init() {
-        document.shell.setAttribute("autocomplete", "off");
-        document.shell.output.scrollTop = document.shell.output.scrollHeight;
-        document.shell.command.focus()
+    if (e.keyCode == 40 && current_line > 0) {
+      command_hist[current_line] = document.shell.command.value;
+      current_line--;
+      document.shell.command.value = command_hist[current_line];
     }
 
-  <?php } elseif ($_SESSION['authenticated'] && $showeditor) { ?>
+  }
 
-    function init() {
-      document.shell.filecontent.focus();
-    }
+  function init() {
+    document.shell.setAttribute("autocomplete", "off");
+    document.getElementById('output').scrollTop = document.getElementById('output').scrollHeight;
+    document.shell.command.focus()
+  }
 
-  <?php } else { ?>
+  <?php } elseif($_SESSION['authenticated'] && $showeditor) { ?>
 
-    function init() {
-        document.shell.username.focus();
-    }
+  function init() {
+    document.shell.filecontent.focus();
+  }
+
+  <?php } else { /* if not authenticated */ ?>
+
+  function init() {
+    document.shell.username.focus();
+  }
 
   <?php } ?>
     function levelup(d) {
@@ -469,9 +726,11 @@ if ($_SESSION['authenticated']) {
 
 <h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
-<form name="shell" enctype="multipart/form-data" action="<?php print($_SERVER['PHP_SELF']) ?>" method="post">
+<form name="shell" enctype="multipart/form-data" action="" method="post">
+<input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
 <div><input name="levelup" id="levelup" type="hidden"></div>
 <div><input name="changedirectory" id="changedirectory" type="hidden"></div>
+
 <?php
 if (!$_SESSION['authenticated']) {
     /* Generate a new nounce every time we present the login page.  This binds
@@ -480,23 +739,24 @@ if (!$_SESSION['authenticated']) {
      * data from a login. */
     $_SESSION['nounce'] = mt_rand();
 
+if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
 
-    if (ini_get('safe_mode') && $ini['settings']['safe-mode-warning'] == true ) {
-        echo '<div class="warning">Warning: Safe-mode is enabled. PHP Shell will probably not work correctly.</div>';
-    }
+<div class="warning">
+Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. See the <a href="SECURITY">SECURITY</a> file for some background information about Safe Mode and its effects on PHP Shell.
+</div>
 
-
-?>
+<?php } /* Safe mode. */ ?>
 
 <fieldset>
-    <legend>Authentication</legend>
-    <?php
+  <legend>Authentication</legend>
+
+  <?php
     if (!empty($username)) {
         echo "  <p class=\"error\">Login failed, please try again:</p>\n";
     } else {
-        echo "  <p>Please login:</p>\n";
+      echo "  <p>Please login:</p>\n";
     }
-    ?>
+  ?>
 
   <label for="username">Username:</label>
   <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
@@ -508,8 +768,16 @@ if (!$_SESSION['authenticated']) {
 </fieldset>
 
 <?php } else { /* Authenticated. */ ?>
+
 <fieldset>
-  <legend><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
+  <!--legend style="background-color: transparent">Script Directory: <code><?php
+     echo htmlescape(dirname(__FILE__));
+    ?></code> &#9899; Current Directory: <code><?php
+     echo htmlescape($_SESSION['cwd']);
+    ?></code>
+  </legend-->
+
+  <legend style="background-color: transparent"><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <?php 
     if ($clearpasswordwarning == true) {
         $clearpasswordwarning = false ; /* display warning only ONCE after login */
@@ -526,13 +794,13 @@ END;
 <p>Current Working Directory:
 <span class="pwd"><?php
     if ( $showeditor ) {
-        echo htmlspecialchars($_SESSION['cwd'], ENT_COMPAT, 'UTF-8') . '</span>';
+        echo htmlescape($_SESSION['cwd']) . '</span>';
     } else { /* normal mode - offer navigation via hyperlinks */
         $parts = explode('/', $_SESSION['cwd']);
      
         for ($i=1; $i<count($parts); $i=$i+1) {
             echo '<a class="pwd" title="Change to this directory. Your command will not be executed." href="javascript:levelup(' . (count($parts)-$i) . ')">/</a>' ;
-            echo htmlspecialchars($parts[$i], ENT_COMPAT, 'UTF-8');
+            echo htmlescape($parts[$i]);
         }
         echo '</span>';
         if (is_readable($_SESSION['cwd'])) { /* is the current directory readable? */
@@ -541,8 +809,8 @@ END;
             /* We store the output so that we can sort it later: */
             $options = array();
             /* Run through all the files and directories to find the dirs. */
-            while ($dir = readdir($dir_handle)) {
-                if (($dir != '.') and ($dir != '..') and is_dir($_SESSION['cwd'] . "/" . $dir)) {
+            while ($dir = @readdir($dir_handle)) {
+                if (($dir != '.') and ($dir != '..') and @is_dir($_SESSION['cwd'] . "/" . $dir)) {
                     $options[$dir] = "<option value=\"/$dir\">$dir</option>";
                 }
             }
@@ -563,29 +831,34 @@ END;
     <?php if (! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
 
 <div id="terminal">
-<textarea name="output" readonly="readonly" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
+<pre id="output" style="height: <?php echo $rows*2 ?>ex; overflow-y: scroll;">
 <?php
         $lines = substr_count($_SESSION['output'], "\n");
         $padding = str_repeat("\n", max(0, $rows+1 - $lines));
-        echo rtrim($padding . $_SESSION['output']);
+        echo rtrim($padding . wordwrap($_SESSION['output'], $columns, "\n", true));
 ?>
-</textarea>
+</pre>
 <p id="prompt">
-<span id="ps1"><?php echo htmlspecialchars($ini['settings']['PS1'], ENT_COMPAT, 'UTF-8'); ?></span>
+<span id="ps1"><?php echo htmlescape($ini['settings']['PS1']); ?></span>
 <input name="command" type="text" onkeyup="key(event)"
        size="<?php echo $columns-strlen($ini['settings']['PS1']); ?>" tabindex="1">
 </p>
 </div>
 
-    <?php } else { /* Output the 'editor' */ ?>
-    <?php print("You are editing this file: ".$filetoedit); ?>
+<?php } else { /* Output the 'editor' */ 
+print "You are editing this file: <code>$filetoedit</code>\n"; 
+if($writeaccesswarning) { ?>
+
+<div class="warning">
+  <p><b>Warning:</b> You may not have write access to <code><?php echo $filetoedit; ?></code></p>
+</div>
+
+<?php } /*write access warning*/ ?>
 
 <div id="terminal">
-<textarea name="filecontent" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
+<textarea name="filecontent" id="filecontent" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
 <?php
-    if (file_exists($filetoedit)) {
-         print(htmlspecialchars(str_replace("%0D%0D%0A", "%0D%0A", file_get_contents($filetoedit))));		 
-    }
+    print($editorcontent);
 ?>
 </textarea>
 </div>
@@ -606,28 +879,30 @@ END;
 <input type="submit" name="clear" value="Clear screen">
 <?php } else { /* for 'editor-mode' */ ?>
 <input type="hidden" name="filetoedit" id="filetoedit" value="<?php print($filetoedit) ?>">
-<input type="submit" value="Save and Exit">
+<input type="submit" name="savefile" value="Save and Exit">
 <input type="reset" value="Undo all Changes">
-<input type="submit" value="Exit without saving" onclick="javascript:document.getElementById('filetoedit').value='';return true;">
+<input type="submit" value="Exit without saving" onclick="javascript:document.getElementById('filetoedit').value='';document.getElementById('filecontent').value='';return true;">
 <?php } ?>
 
   <input type="submit" name="logout" value="Logout">
 </p>
 </fieldset>
+</form>
 
 <?php if ($ini['settings']['file-upload']) { ?>
 <br><br>
+<form name="upload" enctype="multipart/form-data" action="" method="post">
+<input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
 <fieldset>
   <legend>File upload</legend>
     Select file for upload:
     <input type="file" name="uploadfile" size="40"><br>
 <input type="submit" value="Upload file">
 </fieldset>
+</form>
     <?php } ?>
 
 <?php } ?>
-
-</form>
 
 <hr>
 

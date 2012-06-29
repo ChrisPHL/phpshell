@@ -38,3 +38,7 @@ Natan Bueno Ungethuem
   
 Tobias Unger
   AddOn including an Editor ("vim") for PHP-Shell 2.1.
+
+Jan Kanis <jan.code@jankanis.nl>
+  Added 'download' command, made the shell open_basedir independent, better cd
+  handling, and various other changes.
