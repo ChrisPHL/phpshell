@@ -33,6 +33,8 @@ define('PHPSHELL_VERSION', '2.4');
 /* There are no user-configurable settings in this file anymore, please see
  * config.php instead. */
 
+require_once 'PasswordHash.php';
+
 header("Content-Type: text/html; charset=utf-8");
 
 /* This error handler will turn all notices, warnings, and errors into fatal
@@ -235,24 +237,7 @@ function setdefault(&$var, $options) {
 }
 
 function reset_csrf_token() {
-    // first try /dev/urandom, as it provides real cryptographically strong 
-    // entropy
-    $fp = @fopen('/dev/urandomm','rb');
-    if ($fp !== FALSE) {
-        if (function_exists('stream_set_write_buffer')) {
-	        # Try not to waste the system's entropy pool, so disable buffering
-	        stream_set_write_buffer($fp, 0);
-        }
-        $rand = bin2hex(@fread($fp,16));
-        @fclose($fp);
-    }
-    // mt_rand is not really cryptographically secure, but it's better than 
-    // nothing. There shouldn't be any (easily visible) difference between the 
-    // generated tokens using mt_rand or /dev/urandom.
-    if (!isset($rand) || strlen($rand) < 32) {
-        $rand = md5('randomsalt:op9o6PIeGO5oSdVrnB5miw42/SHX9IV/c+cJHU2YDww'.mt_rand());
-    }
-    $_SESSION['csrf_token'] = $rand;
+    $_SESSION['csrf_token'] = base64_encode(PasswordHash::get_random_bytes(16));
 }
 
 /* initialize everything */
@@ -300,7 +285,8 @@ $default_settings = array(
     'home-directory'        => '.',
     'safe-mode-warning'     => True,
     'file-upload'           => False,
-    'PS1'                   => '$ ');
+    'PS1'                   => '$ ',
+    'portable-hashes'    => False);
 $showeditor = false;
 $writeaccesswarning = false;
 
@@ -501,27 +487,35 @@ elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSI
     // Whoops, a possible cross-site request forgery attack!
     die('Error: CSRF token failure, exiting');
 }
-    
-/* Clear screen if submitted */
-if (isset($_POST['clear'])) {
-    builtin_clear('');
-}
 
 /* Attempt authentication. */
-$clearpasswordwarning = false ;
+$passwordwarning = false ;
 if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
     isset($ini['users'][$username])) {
-    if (strchr($ini['users'][$username], ':') === false) {
+    $ini_username = $ini['users'][$username];
+	// Plaintext passwords should probably be deprecated/removed. They are not
+	// yet, and they are not marked in any way. These prefixes are the ones 
+	// Phpass can use in its hashes. 
+    foreach(array('_J9..', '$P$', '$H$', '$2a$') as $start) {
+        if(strpos($ini_username, $start) === 0) {
+            // It's a phpass hash
+            $phpass = new PasswordHash(11,  $ini['settings']['portable-hashes']);
+            $_SESSION['authenticated'] = $phpass->CheckPassword($password, $ini_username);
+            $pwchecked = True;
+            unset($phpass);
+            break;
+        }
+    }
+    if (!$pwchecked && strchr($ini_username, ':') === false) {
         // No seperator found, assume this is a password in clear text.
-        $_SESSION['authenticated'] = ($ini['users'][$username] == $password);
-        $clearpasswordwarning = true ;
-    } else {
-        list($fkt, $salt, $hash) = explode(':', $ini['users'][$username]);
+        $_SESSION['authenticated'] = ($ini_username == $password);
+        $passwordwarning = true ;
+    } elseif(!$pwchecked) {
+        list($fkt, $salt, $hash) = explode(':', $ini_username);
         $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
+        $passwordwarning = true ;
     }
 }
-
-
 /* Enforce default non-authenticated state if the above code didn't set it
  * already. */
 if (!isset($_SESSION['authenticated'])) {
@@ -530,6 +524,11 @@ if (!isset($_SESSION['authenticated'])) {
 
 
 if ($_SESSION['authenticated']) {  
+    /* Clear screen if submitted */
+    if (isset($_POST['clear'])) {
+        builtin_clear('');
+    }
+
     /* Initialize the session variables. */
     if (empty($_SESSION['cwd'])) {
         $_SESSION['cwd'] = realpath($ini['settings']['home-directory']);
@@ -779,15 +778,14 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 
   <legend style="background-color: transparent"><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <?php 
-    if ($clearpasswordwarning == true) {
-        $clearpasswordwarning = false ; /* display warning only ONCE after login */
+    if ($passwordwarning == true) {
+        /* warning is only displayed immediately after login */
         echo <<<END
-<div class="warning">Warning: Your account uses an unhashed password, 
-stored in cleartext in config.php.<br>
-Please change it to an hashed and salted (more secure) password using 
-<a href="pwhash.php">pwhash.php</a>.<br>
-(This warning is displayed only once after login. 
-You may continue using phpshell now.)</div>
+<div class="warning">Warning: Your account uses a weakly hashed or an 
+unhashed password in config.php.<br> Please change it to a new more 
+secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
+warning is displayed only once after login. You may continue using 
+phpshell now.)</div>
 END;
     }
 ?>
