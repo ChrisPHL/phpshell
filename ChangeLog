@@ -1,3 +1,7 @@
+2012-07-01  Jan Kanis
+  * added support for phpass. This is (I believe) an important security improvement. 
+  * Accept 'clear' command only if authenticated & CSRF token checked
+
 2012-06-29  Jan Kanis
   * PHP Shell now implements protection against Cross-Site Request Forgery attacks (CSRF). A security critical app like this should have implemented that a long time ago. 
   * change terminal output from a <textarea> to a <pre>, so the output doesn't get sent back to the server every POST.

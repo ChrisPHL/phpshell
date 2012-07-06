@@ -8,6 +8,8 @@
 
 define('PHPSHELL_VERSION', '2.4');
 
+require_once 'PasswordHash.php';
+
 function stripslashes_deep($value) 
 {
     if (is_array($value)) {
@@ -23,6 +25,13 @@ if (get_magic_quotes_gpc()) {
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
+
+/* Load the configuration. */
+$ini = parse_ini_file('config.php', true);
+
+if (empty($ini['settings'])) {
+    $ini['settings'] = array();
+}
 
 ?>
 <?php echo '<?xml version="1.0" ?>' ?>
@@ -45,7 +54,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 This password hasher creates salted and hashed password entries for your PHP shell config files.
 </p>
 
-<form action="<?php $_SERVER['PHP_SELF']; ?>" method="post">
+<form action="" method="post">
 
 <fieldset>
   <legend>Username/Password</legend>
@@ -68,8 +77,7 @@ This password hasher creates salted and hashed password entries for your PHP she
 if ($username == '' || $password == '') {
   echo "  <p><i>Enter a username and a password and update.</i></p>\n";
 } else {
-
-  $u = strtolower($username);
+	$u = strtolower($username);
     /* some reserved words are not allowed as username, because there is a 
        restriction in parse_ini_string() 
        (http://php.net/manual/en/function.parse-ini-string.php) */
@@ -86,29 +94,16 @@ END;
         echo "<p>Write the following line into <tt>config.php</tt> "; 
         echo "in the <tt>[users]</tt> section:</p>\n";
 
-        /* define sha512 function if possible */
-        if (function_exists('hash')) {
-            if ( in_array('sha512', hash_algos())) {
-                function sha512($plaintext) {
-                    return hash("sha512", $plaintext);
-                }
-            }
+        $portablehashes = $ini['settings']['portable-hashes'];
+        if ($portablehashes !== True) {
+            $portablehashes = False;
         }
-        if ( function_exists('sha512') ) {
-            $fkt = 'sha512' ;
-        } elseif ( function_exists('sha1') ) {
-            $fkt = 'sha1' ;
-
-  } else {
-            $fkt = 'md5' ;
-        } ;
-    $salt = dechex(mt_rand());
-
-    $hash = $fkt . ':' . $salt . ':' . $fkt($salt . $password);
+        $phpass = new PasswordHash(11, $portablehashes);
+        $hash = $phpass->HashPassword($password);
 
         echo "<pre>".htmlentities($u)." = &quot;$hash&quot;</pre>\n";
         echo "<p>After you have done that, you can return to <a href=\"phpshell.php\">phpshell.php</a> and login.</p>\n";
-  }
+    }
 }
 ?>
 
