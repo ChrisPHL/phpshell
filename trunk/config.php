@@ -87,7 +87,7 @@ file-upload = false
 ; these hashing algorithms, so it depends on the system PHP is running on 
 ; whether these methods are available. As of PHP 5.3 PHP no longer depends on 
 ; the system libraries but has these algorithms built-in, so they are always 
-; available.  
+; available. 
 ; 
 ; If neither Blowfish nor Extended DES are available, PHP Shell falls back to 
 ; the private hashing algorithm from Phpass <http://www.openwall.com/phpass/>, 
@@ -99,6 +99,10 @@ file-upload = false
 ; machine where they are not available, you will not be able to log in. In 
 ; that case, you should set 'portable-hashes' to 'true'. Unless you know that
 ; you need to do that, you should leave this setting set to 'false'.
+; 
+; Note that some versions of PHP (including some instances of PHP 5.3) have 
+; bugs in their implementation of Extended DES. If your system does, and you 
+; are unable to log in, use portable hashes. 
 
 portable-hashes = false
 

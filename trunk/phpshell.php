@@ -237,10 +237,13 @@ function setdefault(&$var, $options) {
 }
 
 function reset_csrf_token() {
-    $_SESSION['csrf_token'] = base64_encode(PasswordHash::get_random_bytes(16));
+    $p = new PasswordHash(11, 0);
+    $_SESSION['csrf_token'] = base64_encode($p->get_random_bytes(16));
 }
 
 /* initialize everything */
+
+$warning = '';
 
 session_start();
 
@@ -489,16 +492,22 @@ elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSI
 }
 
 /* Attempt authentication. */
-$passwordwarning = false ;
 if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
     isset($ini['users'][$username])) {
     $ini_username = $ini['users'][$username];
 	// Plaintext passwords should probably be deprecated/removed. They are not
 	// yet, and they are not marked in any way. These prefixes are the ones 
 	// Phpass can use in its hashes. 
-    foreach(array('_J9..', '$P$', '$H$', '$2a$') as $start) {
+    $pwchecked = false;
+    foreach(array('_', '$P$', '$H$', '$2a$') as $start) {
         if(strpos($ini_username, $start) === 0) {
             // It's a phpass hash
+            // warn if we can't verify the hash
+            if ($start == '_' && !CRYPT_EXT_DES) {
+                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_EXT_DES</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
+            } elseif ($start == '$2a$' && !CRYPT_BLOWFISH) {
+                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_BLOWFISH</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
+            }
             $phpass = new PasswordHash(11,  $ini['settings']['portable-hashes']);
             $_SESSION['authenticated'] = $phpass->CheckPassword($password, $ini_username);
             $pwchecked = True;
@@ -509,11 +518,23 @@ if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] &&
     if (!$pwchecked && strchr($ini_username, ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $_SESSION['authenticated'] = ($ini_username == $password);
-        $passwordwarning = true ;
+        $warning .= <<<END
+<div class="warning">Warning: Your account uses an 
+unhashed password in config.php.<br> Please change it to a more 
+secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
+warning is displayed only once after login. You may continue using 
+phpshell now.)</div>
+END;
     } elseif(!$pwchecked) {
         list($fkt, $salt, $hash) = explode(':', $ini_username);
         $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
-        $passwordwarning = true ;
+        $warning .= <<<END
+<div class="warning">Warning: Your account uses a weakly hashed 
+password in config.php.<br> Please change it to a new more 
+secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
+warning is displayed only once after login. You may continue using 
+phpshell now.)</div>
+END;
     }
 }
 /* Enforce default non-authenticated state if the above code didn't set it
@@ -750,6 +771,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
   <legend>Authentication</legend>
 
   <?php
+    echo $warning;
     if (!empty($username)) {
         echo "  <p class=\"error\">Login failed, please try again:</p>\n";
     } else {
@@ -778,16 +800,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 
   <legend style="background-color: transparent"><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <?php 
-    if ($passwordwarning == true) {
-        /* warning is only displayed immediately after login */
-        echo <<<END
-<div class="warning">Warning: Your account uses a weakly hashed or an 
-unhashed password in config.php.<br> Please change it to a new more 
-secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
-warning is displayed only once after login. You may continue using 
-phpshell now.)</div>
-END;
-    }
+    echo $warning;
 ?>
 <p>Current Working Directory:
 <span class="pwd"><?php
