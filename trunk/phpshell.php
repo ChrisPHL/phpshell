@@ -302,7 +302,8 @@ function runcommand($cmd) {
 
     $extra_env = 
         "export ROWS=$rows\n".
-        "export COLUMNS=$columns\n";
+        "export COLUMNS=$columns\n".
+        "export HOME=" . realpath($ini['settings']['home-directory']) . "\n";
 
     $aliases = '';
     foreach($ini['aliases'] as $al => $expansion){
