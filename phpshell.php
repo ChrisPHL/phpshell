@@ -163,7 +163,7 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
 
     $io = array();
     $pipes = array(1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
-    if($fd9) $pipes[9] = array('pipe', 'w');
+    if ($fd9) $pipes[9] = array('pipe', 'w');
     $p = proc_open(add_dir($cmd, $_SESSION['cwd']), $pipes, $io);
 
     /* 
@@ -177,7 +177,7 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
 
     // set all streams to nonblocking mode, so we can read them all at once 
     // below
-    foreach($io as $pipe) {
+    foreach ($io as $pipe) {
         stream_set_blocking($pipe, 0);
     }
 
@@ -188,13 +188,13 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
         // stream_select. Also, we just want to select on those pipes that are
         // not closed yet. 
         $read = array();
-        foreach($io as $pipe){
-            if(!feof($pipe))
+        foreach ($io as $pipe) {
+            if (!feof($pipe))
                 $read[] = $pipe;
         }
 
         // break out if nothing more to read
-        if(count($read) == 0) 
+        if (count($read) == 0) 
             break;
 
         // define these because we must pass something by reference
@@ -228,7 +228,7 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
 }
 
 function setdefault(&$var, $options) {
-    foreach($options as $opt) {
+    foreach ($options as $opt) {
         if ($opt != '') {
             $var = $opt;
             return;
@@ -247,7 +247,7 @@ $warning = '';
 
 session_start();
 
-if(!isset($_SESSION['csrf_token'])) {
+if (!isset($_SESSION['csrf_token'])) {
     reset_csrf_token();
 }
 
@@ -306,7 +306,7 @@ function runcommand($cmd) {
         "export HOME=" . realpath($ini['settings']['home-directory']) . "\n";
 
     $aliases = '';
-    foreach($ini['aliases'] as $al => $expansion){
+    foreach ($ini['aliases'] as $al => $expansion) {
         $aliases .= "alias $al=".escapeshellarg($expansion)."\n";
     }
 
@@ -319,7 +319,7 @@ function runcommand($cmd) {
     list($status, $out, $newcwd) = exec_command($command, $_SESSION['cwd'], True, True);
 
     // trim because 'pwd' adds a newline
-    if(strlen($newcwd) > 0 && $newcwd{0} == '/')
+    if (strlen($newcwd) > 0 && $newcwd{0} == '/')
         $_SESSION['cwd'] = trim($newcwd);
 
     $_SESSION['output'] .= htmlescape($out);
@@ -335,12 +335,12 @@ function builtin_download($arg) {
     }
 
     /* test if file exists */
-    if(exec_test_cwd("test -e ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+    if (exec_test_cwd("test -e ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
         $_SESSION['output'] .= "download: file not found: '$arg'\n";
         return;
     }
 
-    if(exec_test_cwd("test -r ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+    if (exec_test_cwd("test -r ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
         $_SESSION['output'] .= "download: Permission denied for file '$arg'\n";
         return;
     }
@@ -374,7 +374,7 @@ function builtin_download($arg) {
     header('Content-Transfer-Encoding: binary');
     header('Expires: 0');
     header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0');
-    if($filesize) header('Content-Length: '.$filesize);
+    if ($filesize) header('Content-Length: '.$filesize);
 
     /* Read output from cat. */
     fpassthru($io[1]);
@@ -390,7 +390,7 @@ function builtin_download($arg) {
 function builtin_editor($arg) {
     global $editorcontent, $filetoedit, $showeditor, $writeaccesswarning;
 
-    if($arg == '') {
+    if ($arg == '') {
         $_SESSION['output'] .= " Syntax: editor filename\n (you forgot the filename)\n";
         return;
     }
@@ -398,35 +398,35 @@ function builtin_editor($arg) {
     $escarg = escapeshellarg($arg);
     $filetoedit = $arg;
 
-    if(exec_test_cwd("test -e $escarg", $_SESSION['cwd']) != 0) {
+    if (exec_test_cwd("test -e $escarg", $_SESSION['cwd']) != 0) {
         // file does not exist
         $editorcontent = '';
         $showeditor = true;
 
         // test current directory for write access
-        if(exec_test_cwd("test -w .", $_SESSION['cwd']) != 0) {
+        if (exec_test_cwd("test -w .", $_SESSION['cwd']) != 0) {
             $writeaccesswarning = true;
         }
 
     } else {
 
-        if(exec_test_cwd("test -f $escarg", $_SESSION['cwd']) != 0) {
+        if (exec_test_cwd("test -f $escarg", $_SESSION['cwd']) != 0) {
             $_SESSION['output'] .= "editor: file '$arg' not found or not a regular file\n";
             return;
         }
 
-        if(exec_test_cwd("test -r $escarg", $_SESSION['cwd']) != 0) {
+        if (exec_test_cwd("test -r $escarg", $_SESSION['cwd']) != 0) {
             $_SESSION['output'] .= "editor: Permission denied for file '$arg'\n";
             return;
         }
 
         // test write access
-        if(exec_test_cwd("test -w $escarg", $_SESSION['cwd']) != 0) {
+        if (exec_test_cwd("test -w $escarg", $_SESSION['cwd']) != 0) {
             $writeaccesswarning = true;
         }
 
         list($status, $output, $error) = exec_command("cat $escarg", $_SESSION['cwd']);
-        if($status != 0) {
+        if ($status != 0) {
             $_SESSION['output'] .= "editor: error: ".htmlescape($error)."\n";
         } else {
             $editorcontent = htmlescape($output);
@@ -486,8 +486,7 @@ $builtins = array(
  * Logging out is allowed without the CSRF token. */
 if (isset($_POST['logout'])) {
     builtin_logout('');
-} 
-elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSION['csrf_token']) {
+} elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSION['csrf_token']) {
     // Whoops, a possible cross-site request forgery attack!
     die('Error: CSRF token failure, exiting');
 }
@@ -500,8 +499,8 @@ if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] &&
 	// yet, and they are not marked in any way. These prefixes are the ones 
 	// Phpass can use in its hashes. 
     $pwchecked = false;
-    foreach(array('_', '$P$', '$H$', '$2a$') as $start) {
-        if(strpos($ini_username, $start) === 0) {
+    foreach (array('_', '$P$', '$H$', '$2a$') as $start) {
+        if (strpos($ini_username, $start) === 0) {
             // It's a phpass hash
             // warn if we can't verify the hash
             if ($start == '_' && !CRYPT_EXT_DES) {
@@ -526,7 +525,7 @@ secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This
 warning is displayed only once after login. You may continue using 
 phpshell now.)</div>
 END;
-    } elseif(!$pwchecked) {
+    } elseif (!$pwchecked) {
         list($fkt, $salt, $hash) = explode(':', $ini_username);
         $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
         $warning .= <<<END
@@ -625,7 +624,7 @@ if ($_SESSION['authenticated']) {
         while (!feof($io[2])) {
             $errmsg .= fread($io[2], 8192);
         }
-        if(trim($errmsg) != '') {
+        if (trim($errmsg) != '') {
             $_SESSION['output'] .= htmlescape('editor: '.$errmsg);
         }
         fclose($io[2]);
@@ -658,7 +657,7 @@ if ($_SESSION['authenticated']) {
             $arg = substr($arg, 1, -1);
         }
 
-        if(array_key_exists($cmd_name, $builtins)) {
+        if (array_key_exists($cmd_name, $builtins)) {
             $builtins[$cmd_name]($arg);
         } else {
             /* The command is not an internal command, so we execute it and 
@@ -719,7 +718,7 @@ if ($_SESSION['authenticated']) {
     document.shell.command.focus()
   }
 
-  <?php } elseif($_SESSION['authenticated'] && $showeditor) { ?>
+  <?php } elseif ($_SESSION['authenticated'] && $showeditor) { ?>
 
   function init() {
     document.shell.filecontent.focus();
@@ -748,9 +747,9 @@ if ($_SESSION['authenticated']) {
 <h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
 <form name="shell" enctype="multipart/form-data" action="" method="post">
-<input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
-<div><input name="levelup" id="levelup" type="hidden"></div>
-<div><input name="changedirectory" id="changedirectory" type="hidden"></div>
+<div><input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
+<input name="levelup" id="levelup" type="hidden">
+<input name="changedirectory" id="changedirectory" type="hidden"></div>
 
 <?php
 if (!$_SESSION['authenticated']) {
@@ -859,7 +858,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 
 <?php } else { /* Output the 'editor' */ 
 print "You are editing this file: <code>$filetoedit</code>\n"; 
-if($writeaccesswarning) { ?>
+if ($writeaccesswarning) { ?>
 
 <div class="warning">
   <p><b>Warning:</b> You may not have write access to <code><?php echo $filetoedit; ?></code></p>
