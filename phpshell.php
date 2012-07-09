@@ -35,7 +35,6 @@ define('PHPSHELL_VERSION', '2.4');
 
 require_once 'PasswordHash.php';
 
-header("Content-Type: text/html; charset=utf-8");
 
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
@@ -100,6 +99,20 @@ function stripslashes_deep($value) {
     } else {
         return stripslashes($value);
     }
+}
+
+function get_phpass() {
+    global $ini;
+    static $phpass;
+    if (!isset($phpass)) {
+        $phpass = new PasswordHash(11, $ini['settings']['portable-hashes']);
+    }
+    return $phpass;
+}
+
+function get_random_bytes($len) {
+    $phpass = get_phpass();
+    return $phpass->get_random_bytes($len);
 }
 
 /* In php older than 4.0.6, mb_convert_encoding does not exist, so we may pass
@@ -237,64 +250,12 @@ function setdefault(&$var, $options) {
 }
 
 function reset_csrf_token() {
-    $p = new PasswordHash(11, 0);
-    $_SESSION['csrf_token'] = base64_encode($p->get_random_bytes(16));
+    $_SESSION['csrf_token'] = base64_encode(get_random_bytes(16));
 }
 
-/* initialize everything */
-
-$warning = '';
-
-session_start();
-
-if (!isset($_SESSION['csrf_token'])) {
-    reset_csrf_token();
+function reset_session_id() {
+    return session_id(bin2hex(get_random_bytes(16)));
 }
-
-
-if (get_magic_quotes_gpc()) {
-    $_POST = stripslashes_deep($_POST);
-}
-
-/* Initialize some variables we need again and again. */
-$username = isset($_POST['username']) ? $_POST['username'] : '';
-$password = isset($_POST['password']) ? $_POST['password'] : '';
-$nounce   = isset($_POST['nounce'])   ? $_POST['nounce']   : '';
-
-$command  = isset($_POST['command'])  ? $_POST['command']  : '';
-
-setdefault($_SESSION['env']['rows'], array(@$_POST['rows'], @$_SESSION['env']['rows'], 24));
-setdefault($_SESSION['env']['columns'], array(@$_POST['columns'], @$_SESSION['env']['columns'], 80));
-
-if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['rows'])) { 
-    $_SESSION['env']['rows']=24 ; 
-} 
-if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['columns'])) {
-    $_SESSION['env']['columns']=80 ;
-}
-$rows = $_SESSION['env']['rows'];
-$columns = $_SESSION['env']['columns'];
-
-
-/* Load the configuration. */
-$ini = parse_ini_file('config.php', true);
-
-if (empty($ini['settings'])) {
-    $ini['settings'] = array();
-}
-
-/* Default settings --- these settings should always be set to something. */
-$default_settings = array(
-    'home-directory'        => '.',
-    'safe-mode-warning'     => True,
-    'file-upload'           => False,
-    'PS1'                   => '$ ',
-    'portable-hashes'    => False);
-$showeditor = false;
-$writeaccesswarning = false;
-
-/* Merge settings. */
-$ini['settings'] = array_merge($default_settings, $ini['settings']);
 
 
 function runcommand($cmd) {
@@ -438,21 +399,17 @@ function builtin_editor($arg) {
 }
 
 function builtin_logout($arg = null) {
+
+    session_destroy();
+    reset_session_id();
+    session_start();
+
     /* Empty the session data, except for the 'authenticated' entry which the
      * rest of the code needs to be able to check. */
     $_SESSION = array('authenticated' => false);
 
     /* Reset the csrf token, as otherwise the login form won't render */
     reset_csrf_token();
-
-    /* Unset the client's cookie, if it has one. */
-//    if (isset($_COOKIE[session_name()]))
-//        setcookie(session_name(), '', time()-42000, '/');
-
-    /* Destroy the session data on the server.  This prevents the simple
-     * replay attach where one uses the back button to re-authenticate using
-     * the old POST data since the server wont know the session then.*/
-//    session_destroy();
 }
 
 function builtin_history($arg) {
@@ -480,6 +437,99 @@ $builtins = array(
     'clear' => 'builtin_clear');
 
 
+
+/** initialize everything **/
+
+/** Load the configuration. **/
+$ini = parse_ini_file('config.php', true);
+
+if (empty($ini['settings'])) {
+    $ini['settings'] = array();
+}
+
+/* Default settings --- these settings should always be set to something. */
+$default_settings = array(
+    'home-directory'        => '.',
+    'safe-mode-warning'     => True,
+    'file-upload'           => False,
+    'PS1'                   => '$ ',
+    'portable-hashes'       => False, 
+    'bind-user-IP'          => True, 
+    'timeout'               => 180);
+// Controls if we are in editor mode
+$showeditor = false;
+// Show warning if we're editing a file we can't write to
+$writeaccesswarning = false;
+// Did we authenticate the users password during this request?
+$passwordchecked = False;
+// Append any html to this string for warning/error messages
+$warning = '';
+
+/* Merge settings. */
+$ini['settings'] = array_merge($default_settings, $ini['settings']);
+
+
+/** initialize session **/
+
+$newsession = !isset($_COOKIE[session_name()]);
+$https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+
+ini_set('session.use_only_cookies', '1');
+
+if (version_compare(PHP_VERSION, '5.2.0', '>=')) {
+    session_set_cookie_params(0,    // cookie lifetime until browser closes
+        $_SERVER['REQUEST_URI'],    // bind cookie to this specific URI
+        Null,                       // use default domain (www.site.com)
+        $https,                     // If called over HTTPS, lock cookie to that
+        True                        // httponly, available since PHP 5.2
+    );
+} else {
+    // same as above, but without 'httponly'
+    session_set_cookie_params(0, $_SERVER['REQUEST_URI'], Null, $https);
+}
+
+if ($newsession) {
+    reset_session_id();
+}
+
+session_start();
+
+
+if (!isset($_SESSION['csrf_token'])) {
+    reset_csrf_token();
+}
+
+/* done initialising session */
+
+/** get POST variables **/
+
+if (get_magic_quotes_gpc()) {
+    $_POST = stripslashes_deep($_POST);
+}
+
+/* Initialize some variables we need again and again. */
+$username = isset($_POST['username']) ? $_POST['username'] : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
+$nonce   = isset($_POST['nonce'])   ? $_POST['nonce']   : '';
+
+$command  = isset($_POST['command'])  ? $_POST['command']  : '';
+
+setdefault($_SESSION['env']['rows'], array(@$_POST['rows'], @$_SESSION['env']['rows'], 24));
+setdefault($_SESSION['env']['columns'], array(@$_POST['columns'], @$_SESSION['env']['columns'], 80));
+
+if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['rows'])) { 
+    $_SESSION['env']['rows']=24 ; 
+} 
+if (!preg_match('/^[[:digit:]]+$/', $_SESSION['env']['columns'])) {
+    $_SESSION['env']['columns']=80 ;
+}
+$rows = $_SESSION['env']['rows'];
+$columns = $_SESSION['env']['columns'];
+
+
+/* initialisation completed, start processing */
+
+
 /* Delete the session data if the user requested a logout. This leaves the
  * session cookie at the user, but this is not important since we
  * authenticates on $_SESSION['authenticated']. 
@@ -490,15 +540,24 @@ if (isset($_POST['logout'])) {
     // Whoops, a possible cross-site request forgery attack!
     die('Error: CSRF token failure, exiting');
 }
+if (!$newsession && @$_SESSION['authenticated']) {
+    if ($ini['settings']['bind-user-IP'] && $_SESSION['user-IP'] != $_SERVER['REMOTE_ADDR']) {
+        $_SESSION['authenticated'] = False;
+    }
+    if ($ini['settings']['timeout'] != 0 && 
+            (time() - $_SESSION['login-timestamp']) / 60 > $ini['settings']['timeout']) {
+        $_SESSION['authenticated'] = False;
+    }
+}
 
 /* Attempt authentication. */
-if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] && 
+if (isset($_SESSION['nonce']) && $nonce == $_SESSION['nonce'] && 
     isset($ini['users'][$username])) {
+    unset($_SESSION['nonce']);
     $ini_username = $ini['users'][$username];
 	// Plaintext passwords should probably be deprecated/removed. They are not
 	// yet, and they are not marked in any way. These prefixes are the ones 
 	// Phpass can use in its hashes. 
-    $pwchecked = false;
     foreach (array('_', '$P$', '$H$', '$2a$') as $start) {
         if (strpos($ini_username, $start) === 0) {
             // It's a phpass hash
@@ -508,16 +567,16 @@ if (isset($_SESSION['nounce']) && $nounce == $_SESSION['nounce'] &&
             } elseif ($start == '$2a$' && !CRYPT_BLOWFISH) {
                 $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_BLOWFISH</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
             }
-            $phpass = new PasswordHash(11,  $ini['settings']['portable-hashes']);
+            $phpass = get_phpass();
             $_SESSION['authenticated'] = $phpass->CheckPassword($password, $ini_username);
-            $pwchecked = True;
-            unset($phpass);
+            $passwordchecked = True;
             break;
         }
     }
-    if (!$pwchecked && strchr($ini_username, ':') === false) {
+    if (!$passwordchecked && strchr($ini_username, ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $_SESSION['authenticated'] = ($ini_username == $password);
+        $passwordchecked = True;
         $warning .= <<<END
 <div class="warning">Warning: Your account uses an 
 unhashed password in config.php.<br> Please change it to a more 
@@ -525,9 +584,10 @@ secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This
 warning is displayed only once after login. You may continue using 
 phpshell now.)</div>
 END;
-    } elseif (!$pwchecked) {
+    } elseif (!$passwordchecked) {
         list($fkt, $salt, $hash) = explode(':', $ini_username);
         $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
+        $passwordchecked = True;
         $warning .= <<<END
 <div class="warning">Warning: Your account uses a weakly hashed 
 password in config.php.<br> Please change it to a new more 
@@ -545,6 +605,20 @@ if (!isset($_SESSION['authenticated'])) {
 
 
 if ($_SESSION['authenticated']) {  
+    if ($passwordchecked) {
+        // For security purposes, reset the session ID if we just logged in. 
+        // Preserve session parameters, re-login may be caused by e.g. a timeout. 
+        $session = $_SESSION;
+        session_destroy();
+        reset_session_id();
+        session_start();
+        $_SESSION = $session;
+        unset($session);
+        reset_csrf_token();
+        $_SESSION['login-timestamp'] = time();
+        $_SESSION['user-IP'] = $_SERVER['REMOTE_ADDR'];
+    }
+
     /* Clear screen if submitted */
     if (isset($_POST['clear'])) {
         builtin_clear('');
@@ -676,6 +750,9 @@ if ($_SESSION['authenticated']) {
     }
 }
 
+
+header("Content-Type: text/html; charset=utf-8");
+
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
@@ -753,11 +830,11 @@ if ($_SESSION['authenticated']) {
 
 <?php
 if (!$_SESSION['authenticated']) {
-    /* Generate a new nounce every time we present the login page.  This binds
+    /* Generate a new nonce every time we present the login page.  This binds
      * each login to a unique hit on the server and prevents the simple replay
      * attack where one uses the back button in the browser to replay the POST
      * data from a login. */
-    $_SESSION['nounce'] = mt_rand();
+    $_SESSION['nonce'] = base64_encode(get_random_bytes(16));
 
 if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
 
@@ -784,7 +861,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
   <label for="password">Password:</label>
   <input name="password" id="password" type="password">
   <p><input type="submit" value="Login"></p>
-  <input name="nounce" type="hidden" value="<?php echo $_SESSION['nounce']; ?>">
+  <input name="nonce" type="hidden" value="<?php echo $_SESSION['nonce']; ?>">
 
 </fieldset>
 

@@ -147,6 +147,10 @@ pwhash.php
   A utility used to generate a hashed password.  Please read INSTALL
   for more information.  This file poses no security risk.
 
+PasswordHash.php
+  A library based on the one available from 
+  <http://www.openwall.com/phpass/> to securely store passwords. 
+
 ChangeLog
   This file describe the changes I've made to PHP Shell.  By reading
   it you'll always know when I've added a new feature or made a

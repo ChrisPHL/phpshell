@@ -1,5 +1,19 @@
+2012-07-09  Jan Kanis
+  * Harden session management: 
+    - use secure randomness to initialise the session id, if available from /dev/urandom
+    - set session to httponly if possible
+    - set session to https if possible
+    - lock the session cookie to PHP Shell's URL
+    - lock session to user's IP address
+    - enable an absolute timeout for the validity of the login information
+    - re-generate a new session id after authentication, to prevent session fixation attacks
+    - also generate a new session id after logout
+  * rename 'nounce' to 'nonce', and use secure randomness for initialization. 
+  * update the SECURITY file regarding the above changes. 
+  * add an additional note regarding Safe Mode to the SECURITY file. 
+
 2012-07-01  Jan Kanis
-  * added support for phpass. This is (I believe) an important security improvement. 
+  * added support for phpass. This is (I believe) an important security improvement as it includes password stretching. 
   * Accept 'clear' command only if authenticated & CSRF token checked
 
 2012-06-29  Jan Kanis
