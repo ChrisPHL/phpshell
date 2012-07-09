@@ -106,3 +106,20 @@ file-upload = false
 
 portable-hashes = false
 
+
+; Bind session to the user's IP address. Set to 'true' (default) for the most 
+; security. If you want to continue the same logged in session from a different
+; IP address, (for example because you want to connect your laptop to different
+; Wifi networks without logging in again) set this to 'false'. 
+
+bind-user-IP = true
+
+
+; The login remains valid for this many minutes before re-login is required. 
+; Note that the timeout happens regardless of whether there is any user 
+; activity. After the timeout expires, the user is prompted again for his/her
+; password, and can then continue the session. 
+; Set to 0 to disable authentication timeouts. 
+
+timeout = 180
+
