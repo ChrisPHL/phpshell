@@ -42,29 +42,33 @@ Setting usernames and passwords
 -------------------------------
 
 As a security precaution PHP Shell has no default username and
-password (people often forget to change them...).  To add the user
-"alice" with password "secret" you simply add
+password (people often forget to change them...).  PHP Shell stores 
+its passwords in a hashed form, so that it is impossible to see what 
+a user's password is by just viewing the configuration file. To add 
+users to your configuration, first go to the supplied ``pwhash.php`` 
+script. On that page, enter a username and password and press 
+'update'. The page will display a line you should add to your 
+config.php file. 
+
+For example, with username 'alice' and password 'secret', you might 
+add the following line: 
 
   [users]
-  alice = "secret"
-
-to the file.  Note that you can add as many users as you want by
-simply adding more lines like this.
-
-This system works, but there is a better way --- a way so that the
-password does not appear in clear text in the file.  For that you use
-the supplied script ``pwhash.php`` to generate a hashed password.
-Please see the instructions given in ``pwhash.php``.
-
-With the above example the result could look like
-
-  [users]
-  alice    = "sha1:1a4861:a8640981d2a5f9452c75a7bb0491eac3ecd8bdc3"
+  alice = "$2a$11$QH.PV11RYCMk9ivWSIfS0eeIkkpoRZEdTv88F97w1xzfo/xk57Gr6"
 
 You will not get exactly the same line if you try it out, this is a
 feature of the system which means that both "alice" and "bob" could
 have "secret" as their password, and you would not be able to tell
 from just looking at ``config.php``.
+
+Please see the instructions given in ``pwhash.php`` for additional 
+information. 
+
+PHP Shell also used to support storing passwords in the clear, but 
+that option is deprecated and shouldn't be used as it is a security 
+risk. Old style non-stretched password hashes are also deprecated. If 
+you use the ``pwhash.php`` script, you will get the most secure 
+password hashes. 
 
 
 Shell Aliases
