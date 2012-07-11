@@ -1062,6 +1062,14 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
   <legend>Authentication</legend>
 
   <?php
+    if (!$https) {
+        echo "<p class='warning' style='background-color: transparent'><b>Security warning:</b> 
+            You are using an unencrypted connection, your password will be sent unencrypted in 
+            cleartext across the internet. Try using <a href='https://".htmlescape($_SERVER['HTTP_HOST'].
+            $_SERVER['SCRIPT_URL'])."'>PHP Shell over HTTPS</a>, or if that does not work, try 
+            contacting your system administrator or hosting provider on how to set up HTTPS 
+            support</p>\n";
+    }
     echo $warning;
     if (!$passwordchecked) {
         echo "  <p>Please login:</p>\n";

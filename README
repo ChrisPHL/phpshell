@@ -56,6 +56,11 @@ otherwise passwords and session cookies will be sent in plaintext
 across the network and anyone intercepting network traffic will be 
 able to steal them. 
 
+PHP Shell gets cryptographically secure random data from the 
+/dev/urandom file in Linux and other Unix systems. If that is not 
+available, PHP Shell only has the request time and process ID as 
+random seeds, which is a lot less entropy. 
+
 For better handling of non-UTF8 bytes in shell output, PHP Shell uses 
 PHP's mbstring extension. If it is not installed, invalid UTF-8 may be 
 sent to the browser (but browsers can deal with that). 

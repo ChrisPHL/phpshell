@@ -1,5 +1,8 @@
 2012-07-11  Jan Kanis
   * implemented login rate limiting. Also an important security feature. 
+  * updated INSTALL, to point people to pwhash.php as a first choice and note cleartext passwords are deprecated
+  * add missing dependency info to README
+  * show a big warning if trying to log in over nonsecured connection. 
 
 2012-07-09  Jan Kanis
   * Harden session management: 
