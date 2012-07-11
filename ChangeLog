@@ -1,3 +1,6 @@
+2012-07-11  Jan Kanis
+  * implemented login rate limiting. Also an important security feature. 
+
 2012-07-09  Jan Kanis
   * Harden session management: 
     - use secure randomness to initialise the session id, if available from /dev/urandom

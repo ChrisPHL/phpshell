@@ -427,6 +427,246 @@ function builtin_history($arg) {
 }
 
 
+/* 
+ * To be as safe as possible against brute-force password guessing attempts and
+ * against DOS attacks that try to exploit the expensive password checking of 
+ * blowfish, we read and parse the ratelimit file twice. First to see if we 
+ * should attempt to authenticate at all or if there's still a timeout in force, 
+ * second to clear or increase the current user's failed login attempts. Keeping
+ * the file opened and locked during the password verification would provide an
+ * attack vector to DOS attacks. When recording the result of that verification 
+ * we need to parse the file again in case there have been any updates 
+ * inbetween. However, the file is simple to parse so the parsing step is 
+ * probably much faster than the password verification. 
+ * 
+ * PHP Shell assumes file locking will work. It won't work if the file is stored
+ * on a FAT volume, or if php is running in multithreaded (instead of 
+ * multiprocess) mode. Both are unlikely as FAT is quite outdated, and many PHP
+ * extensions are not thread-safe so PHP hosting providers usually don't run PHP
+ * in multithreaded mode. 
+ */
+class RateLimit {
+
+    var $filename;
+    var $intemp;
+
+    function RateLimit() {
+        global $ini;
+        if (strlen(trim($ini['settings']['rate-limit-file']))) {
+            $this->filename = $ini['settings']['rate-limit-file'];
+            $this->intemp = False;
+        } else {
+            $tempdir = function_exists('sys_get_temp_dir') ? sys_get_temp_dir() : '';
+            if (!@is_dir($tempdir)) {
+                $tempdir = (string) getenv('TMPDIR');
+            }
+            if (!@is_dir($tempdir)) {
+                $tempdir = '/tmp';
+            }
+            // the md5 is not for security, just obfuscation
+            $this->filename = $tempdir.'/floodcontrol_'.md5('PHP Shell '.$_SERVER['SERVER_NAME']);
+            $this->intemp = True;
+        }
+    }
+
+    function parse_file($str) {
+        $parsed = array();
+        foreach (explode("\n", $str) as $line) {
+            $a = explode(' ', rtrim($line));
+            if (count($a) < 3) {
+                continue;
+            }
+            list($ip, $count, $timestamp) = $a;
+            $parsed[$ip] = array('count' => $count, 'timestamp' => $timestamp);
+        }
+        return $parsed;
+    }
+
+    function serialize_table($table) {
+        $a = array();
+        foreach($table as $ip => $row) {
+            $a[] = "$ip {$row['count']} {$row['timestamp']}\n";
+        }
+        return implode('', $a);
+    }
+
+    function gc_table($table) {
+        // remove entries older than a week
+        $limit = time() - 60 * 60 * 24 * 7; 
+        foreach (array_keys($table) as $ip) {
+            if ($table[$ip]['timestamp'] < $limit) {
+                unset($table[$ip]);
+            }
+        }
+        return $table;
+    }
+            
+
+    function readfile($fh) {
+        $contents = '';
+        while (!feof($fh)) {
+            $contents .= fread($fh, 8192);
+        }
+        return $contents;
+    }
+
+    function check_linked($fh, $name) {
+        clearstatcache();
+        $fh_stat = fstat($fh);
+        $name_stat = @stat($name);
+        return !is_null($name_stat) && 
+                $fh_stat['dev'] === $name_stat['dev'] &&
+                $fh_stat['ino'] === $name_stat['ino'];
+        }
+    
+    function get_timeout() {
+        if (!file_exists($this->filename)) {
+            return 0;
+        }
+        $fh = fopen($this->filename, 'r');
+        flock($fh, LOCK_SH);
+        $linked = $this->check_linked($fh, $this->filename);
+        $contents = $this->readfile($fh);
+        flock($fh, LOCK_UN);
+        fclose($fh);
+        $table = $this->parse_file($contents);
+        if (!$linked) {
+            return $this->get_timeout();
+        }
+
+        if (!isset($table[$_SERVER['REMOTE_ADDR']])) {
+            return 0;
+        } else {
+            $record = $table[$_SERVER['REMOTE_ADDR']];
+            // start counting only on the third failed try
+            $timeout = (int) pow(2, $record['count']-2);
+            $waited = time() - $record['timestamp'];
+            return max(0, $timeout - $waited);
+        }
+    }
+
+    // register a failed login of the current user
+    function register_user() {
+        $fh = fopen($this->filename, 'a+');
+        if ($this->intemp) {chmod($this->filename, 0640);}
+        flock($fh, LOCK_EX);
+        $linked = $this->check_linked($fh, $this->filename);
+        $table = $this->gc_table($this->parse_file($this->readfile($fh)));
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $table[$ip] = array('count' => @$table[$ip]['count']+1, 'timestamp' => time());
+        ftruncate($fh, 0);
+        rewind($fh);
+        fwrite($fh, $this->serialize_table($table));
+        fflush($fh);
+        flock($fh, LOCK_UN);
+        fclose($fh);
+        if (!$linked) {
+            return $this->register_user();
+        }
+    }
+
+    // a succesful login, clear failed login attempts for user
+    function clear_user() {
+        if (!file_exists($this->filename)) {
+            return;
+        }
+        $fh = fopen($this->filename, 'a+');
+        if ($this->intemp) {chmod($this->filename, 0640);}
+        flock($fh, LOCK_EX);
+        $linked = $this->check_linked($fh, $this->filename);
+        $table = $this->gc_table($this->parse_file($this->readfile($fh)));
+        unset($table[$_SERVER['REMOTE_ADDR']]);
+        ftruncate($fh, 0);
+        rewind($fh);
+        fwrite($fh, $this->serialize_table($table));
+        fflush($fh);
+        if ($linked && $this->intemp && count($table) == 0) {
+            @unlink($this->filename);
+        }
+        flock($fh, LOCK_UN);
+        fclose($fh);
+        if (!$linked) {
+            return $this->clear_user();
+        }
+    }
+}
+
+// attempt to authenticate but prevent brute forcing
+function try_authenticate($username, $password) {
+    global $ini, $warning;
+    if ($ini['settings']['enable-rate-limiting']) {
+        $rl = new RateLimit();
+        $wait = $rl->get_timeout();
+        if ($wait) {
+            $warning .= "<p class='warning'>Error: Too many failed login attempts, 
+                please wait $wait seconds more before re-trying to log in.</p>";
+            return False;
+        }
+        $authenticated = authenticate($username, $password);
+        if ($authenticated) {
+            $rl->clear_user();
+        } else {
+            $rl->register_user();
+        }
+    } else {
+        $authenticated = authenticate($username, $password);
+    }
+    if (!$authenticated) {
+        $warning .= "<p class=\"error\">Login failed, please try again:</p>\n";
+    }
+    return $authenticated;
+}
+
+// returns True if authentication was succesful, False if not
+function authenticate($username, $password) {
+    global $ini, $warning;
+
+    if (!isset($ini['users'][$username])) {
+        return False;
+    }
+    $ini_username = $ini['users'][$username];
+    // Plaintext passwords should probably be deprecated/removed. They are not
+    // yet, and they are not marked in any way. These prefixes are the ones 
+    // Phpass can use in its hashes. 
+    foreach (array('_', '$P$', '$H$', '$2a$') as $start) {
+        if (strpos($ini_username, $start) === 0) {
+            // It's a phpass hash
+            // warn if we can't verify the hash
+            if ($start == '_' && !CRYPT_EXT_DES) {
+                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_EXT_DES</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
+            } elseif ($start == '$2a$' && !CRYPT_BLOWFISH) {
+                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_BLOWFISH</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
+            }
+            $phpass = get_phpass();
+            return $phpass->CheckPassword($password, $ini_username);
+        }
+    }
+    if (strchr($ini_username, ':') === false) {
+        // No seperator found, assume this is a password in clear text.
+        $warning .= <<<END
+<div class="warning">Warning: Your account uses an 
+unhashed password in config.php.<br> Please change it to a more 
+secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
+warning is displayed only once after login. You may continue using 
+phpshell now.)</div>
+END;
+        return ($ini_username == $password);
+    } else {
+        // old style hash
+        list($fkt, $salt, $hash) = explode(':', $ini_username);
+        $warning .= <<<END
+<div class="warning">Warning: Your account uses a weakly hashed 
+password in config.php.<br> Please change it to a new more 
+secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
+warning is displayed only once after login. You may continue using 
+phpshell now.)</div>
+END;
+        return ($fkt($salt . $password) == $hash);
+    }
+}
+
+
+
 /* the builtins this shell recognizes */
 $builtins = array(
     'download' => 'builtin_download',
@@ -455,12 +695,14 @@ $default_settings = array(
     'PS1'                   => '$ ',
     'portable-hashes'       => False, 
     'bind-user-IP'          => True, 
-    'timeout'               => 180);
+    'timeout'               => 180,
+    'enable-rate-limiting'  => True,
+    'rate-limit-file'       => '');
 // Controls if we are in editor mode
 $showeditor = false;
 // Show warning if we're editing a file we can't write to
 $writeaccesswarning = false;
-// Did we authenticate the users password during this request?
+// Did we try to authenticate the users password during this request?
 $passwordchecked = False;
 // Append any html to this string for warning/error messages
 $warning = '';
@@ -473,6 +715,7 @@ $ini['settings'] = array_merge($default_settings, $ini['settings']);
 
 $newsession = !isset($_COOKIE[session_name()]);
 $https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+$expiredsession = False;
 
 ini_set('session.use_only_cookies', '1');
 
@@ -493,6 +736,9 @@ if ($newsession) {
 }
 
 session_start();
+if ($_SESSION == array()) {
+    $expiredsession = True;
+}
 
 
 if (!isset($_SESSION['csrf_token'])) {
@@ -507,13 +753,7 @@ if (get_magic_quotes_gpc()) {
     $_POST = stripslashes_deep($_POST);
 }
 
-/* Initialize some variables we need again and again. */
-$username = isset($_POST['username']) ? $_POST['username'] : '';
-$password = isset($_POST['password']) ? $_POST['password'] : '';
-$nonce   = isset($_POST['nonce'])   ? $_POST['nonce']   : '';
-
-$command  = isset($_POST['command'])  ? $_POST['command']  : '';
-
+/* Initialize some variables we need */
 setdefault($_SESSION['env']['rows'], array(@$_POST['rows'], @$_SESSION['env']['rows'], 24));
 setdefault($_SESSION['env']['columns'], array(@$_POST['columns'], @$_SESSION['env']['columns'], 80));
 
@@ -530,17 +770,33 @@ $columns = $_SESSION['env']['columns'];
 /* initialisation completed, start processing */
 
 
-/* Delete the session data if the user requested a logout. This leaves the
- * session cookie at the user, but this is not important since we
- * authenticates on $_SESSION['authenticated']. 
- * Logging out is allowed without the CSRF token. */
+header("Content-Type: text/html; charset=utf-8");
+
+
+/* Delete the session data if the user requested a logout. 
+ * Logging out is allowed without the CSRF token or other security checks, so 
+ * someone can still logout if there's an error in the rest of the code. 
+ * This also means that an attacker using CSRF can force someone to logout, but
+ * that is not an important security problem. */
 if (isset($_POST['logout'])) {
     builtin_logout('');
+// Check CSRF token
 } elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && @$_POST['csrf_token'] != $_SESSION['csrf_token']) {
     // Whoops, a possible cross-site request forgery attack!
-    die('Error: CSRF token failure, exiting');
+    // But possibly it's just that the session expired. 
+    if ($expiredsession) {
+        $warning .= "<p class='error'>Session timed out</p>\n";
+    } else {
+        $warning .= "<p class='error'>Error: CSRF token failure</p>\n";
+    }
+    // Clear any POST commands, treat this request like a GET. 
+    $_POST = array();
 }
-if (!$newsession && @$_SESSION['authenticated']) {
+// Enforce session security settings
+if (!isset($_SESSION['authenticated'])) {
+    $_SESSION['authenticated'] = False;
+}
+if (!$newsession && $_SESSION['authenticated']) {
     if ($ini['settings']['bind-user-IP'] && $_SESSION['user-IP'] != $_SERVER['REMOTE_ADDR']) {
         $_SESSION['authenticated'] = False;
     }
@@ -550,62 +806,19 @@ if (!$newsession && @$_SESSION['authenticated']) {
     }
 }
 
+/* set some variables we need a lot */
+$username = isset($_POST['username']) ? $_POST['username'] : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
+$command  = isset($_POST['command'])  ? $_POST['command']  : '';
+
 /* Attempt authentication. */
-if (isset($_SESSION['nonce']) && $nonce == $_SESSION['nonce'] && 
-    isset($ini['users'][$username])) {
+if (isset($_SESSION['nonce']) && isset($_POST['nonce']) && 
+        $_POST['nonce'] == $_SESSION['nonce'] && isset($_POST['login'])) {
     unset($_SESSION['nonce']);
-    $ini_username = $ini['users'][$username];
-	// Plaintext passwords should probably be deprecated/removed. They are not
-	// yet, and they are not marked in any way. These prefixes are the ones 
-	// Phpass can use in its hashes. 
-    foreach (array('_', '$P$', '$H$', '$2a$') as $start) {
-        if (strpos($ini_username, $start) === 0) {
-            // It's a phpass hash
-            // warn if we can't verify the hash
-            if ($start == '_' && !CRYPT_EXT_DES) {
-                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_EXT_DES</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
-            } elseif ($start == '$2a$' && !CRYPT_BLOWFISH) {
-                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_BLOWFISH</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
-            }
-            $phpass = get_phpass();
-            $_SESSION['authenticated'] = $phpass->CheckPassword($password, $ini_username);
-            $passwordchecked = True;
-            break;
-        }
-    }
-    if (!$passwordchecked && strchr($ini_username, ':') === false) {
-        // No seperator found, assume this is a password in clear text.
-        $_SESSION['authenticated'] = ($ini_username == $password);
-        $passwordchecked = True;
-        $warning .= <<<END
-<div class="warning">Warning: Your account uses an 
-unhashed password in config.php.<br> Please change it to a more 
-secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
-warning is displayed only once after login. You may continue using 
-phpshell now.)</div>
-END;
-    } elseif (!$passwordchecked) {
-        list($fkt, $salt, $hash) = explode(':', $ini_username);
-        $_SESSION['authenticated'] = ($fkt($salt . $password) == $hash);
-        $passwordchecked = True;
-        $warning .= <<<END
-<div class="warning">Warning: Your account uses a weakly hashed 
-password in config.php.<br> Please change it to a new more 
-secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
-warning is displayed only once after login. You may continue using 
-phpshell now.)</div>
-END;
-    }
-}
-/* Enforce default non-authenticated state if the above code didn't set it
- * already. */
-if (!isset($_SESSION['authenticated'])) {
-    $_SESSION['authenticated'] = false;
-}
+    $passwordchecked = True; 
 
-
-if ($_SESSION['authenticated']) {  
-    if ($passwordchecked) {
+    $_SESSION['authenticated'] = try_authenticate($username, $password);
+    if ($passwordchecked && $_SESSION['authenticated']) {
         // For security purposes, reset the session ID if we just logged in. 
         // Preserve session parameters, re-login may be caused by e.g. a timeout. 
         $session = $_SESSION;
@@ -618,7 +831,10 @@ if ($_SESSION['authenticated']) {
         $_SESSION['login-timestamp'] = time();
         $_SESSION['user-IP'] = $_SERVER['REMOTE_ADDR'];
     }
+}
 
+/* process user commands */
+if ($_SESSION['authenticated']) {  
     /* Clear screen if submitted */
     if (isset($_POST['clear'])) {
         builtin_clear('');
@@ -751,8 +967,6 @@ if ($_SESSION['authenticated']) {
 }
 
 
-header("Content-Type: text/html; charset=utf-8");
-
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
@@ -849,10 +1063,8 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 
   <?php
     echo $warning;
-    if (!empty($username)) {
-        echo "  <p class=\"error\">Login failed, please try again:</p>\n";
-    } else {
-      echo "  <p>Please login:</p>\n";
+    if (!$passwordchecked) {
+        echo "  <p>Please login:</p>\n";
     }
   ?>
 
@@ -860,7 +1072,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
   <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
   <label for="password">Password:</label>
   <input name="password" id="password" type="password">
-  <p><input type="submit" value="Login"></p>
+  <p><input type="submit" name="login" value="Login"></p>
   <input name="nonce" type="hidden" value="<?php echo $_SESSION['nonce']; ?>">
 
 </fieldset>
@@ -922,7 +1134,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 <pre id="output" style="height: <?php echo $rows*2 ?>ex; overflow-y: scroll;">
 <?php
         $lines = substr_count($_SESSION['output'], "\n");
-        $padding = str_repeat("\n", max(0, $rows+1 - $lines));
+        $padding = str_repeat("\n", max(0, $rows - $lines));
         echo rtrim($padding . wordwrap($_SESSION['output'], $columns, "\n", true));
 ?>
 </pre>
@@ -941,7 +1153,10 @@ if ($writeaccesswarning) { ?>
   <p><b>Warning:</b> You may not have write access to <code><?php echo $filetoedit; ?></code></p>
 </div>
 
-<?php } /*write access warning*/ ?>
+<?php 
+} /*write access warning*/ 
+echo $warning; 
+?>
 
 <div id="terminal">
 <textarea name="filecontent" id="filecontent" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
