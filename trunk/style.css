@@ -72,7 +72,7 @@ label {
   color: red;
 }
 
-div.warning {
+.warning {
   background-color: rgb(255, 150, 150);
   border: medium solid rgb(255, 60, 60);
   padding: 0.5em;

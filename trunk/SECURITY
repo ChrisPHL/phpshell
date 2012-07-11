@@ -103,7 +103,7 @@ web server configuration would be:
   available,
 * access to a shell interpreter binary,
 * One or more files to which PHP Shell has write access. 
-The general approach would then be to write the users shell commands 
+The general approach would then be to write the user's shell commands 
 to the file, and execute the shell interpreter with the file as 
 argument. This can still be done in Safe Mode, but it is currently 
 not implemented.
@@ -156,7 +156,7 @@ Unix/Linux) when you use it).
 
 
 Common attacks against PHP applications
----------------------------------------
+=======================================
 
 There are several classes of common attacks that are often used 
 against PHP. 
@@ -212,6 +212,26 @@ PHP Shell attempts to do the following to protect sessions:
 * time out the users authentication after a configurable amount of 
   time, 
 * include a nonce every time the login form is generated. 
+
+Brute-force password guessing
+-----------------------------
+
+One of the most general attacks against online systems that are 
+protected by passwords is attempting to guess a password by trying 
+lots of possibilities. The first line of defence against such attacks
+is to use strong passwords: passwords that are long, do not consist of
+dictionary words or simple variations thereof, and include characters 
+from a large character set, e.g. lower case and upper case letters, 
+numbers, and special characters. 
+
+As of version 2.6, PHP Shell also implements rate limiting. Every time 
+a login attempt fails, this is logged in a file (the location of which 
+is configurable). After the third failed log in attempt from one IP 
+address, PHP Shell enforces a timeout during which a user won't be 
+able to log in. The length of the timeout increases exponentially with 
+the number of failed login attempts. After a succesful login, the 
+counter is reset. 
+
 
 
 

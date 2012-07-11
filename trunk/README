@@ -36,6 +36,40 @@ output and input redirection, etc...  (There is no <tab>-completion,
 though :-)
 
 
+Requirements
+============
+
+PHP Shell requires (as the name implies) a web server running PHP. PHP 
+Shell works under PHP 4 and 5, the oldest version known to work is PHP 
+4.3, mainly because that is the oldest version that compiles without 
+adjustments on the developer's linux system. PHP Shell does not depend 
+on any PHP extensions, it is self contained. 
+
+However, there are a number of security related features that are not 
+available in some older versions of PHP, notably: 
+- Blowfish password hashing support (system dependent, built-in to PHP 
+  as of PHP 5.3)
+- httponly session cookies (since PHP 5.2)
+
+It is also strongly advised to run PHP Shell over HTTPS, since 
+otherwise passwords and session cookies will be sent in plaintext 
+across the network and anyone intercepting network traffic will be 
+able to steal them. 
+
+For better handling of non-UTF8 bytes in shell output, PHP Shell uses 
+PHP's mbstring extension. If it is not installed, invalid UTF-8 may be 
+sent to the browser (but browsers can deal with that). 
+
+PHP Shell's login rate limiter stores failed login attempts in a file. 
+As multiple instances of PHP may try to acces that file concurrently, 
+PHP Shell needs working flock() support to correctly handle this. 
+Flock does not work on FAT filesystems, some networked filesystems, 
+and when running in multithreaded mode on some servers such as IIS. 
+Trying to run PHP Shell with rate limiting on such systems may cause 
+the rate limiting to sometimes fail, but shouldn't affect PHP Shell as 
+a whole. 
+
+
 Safe Mode
 =========
 

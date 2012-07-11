@@ -27,7 +27,7 @@
 ; The semi-colon ':' is a reserved character, so do *not* use that in
 ; your passwords.
 ;
-; For improved security it is *strongly suggested* that you the
+; For improved security it is *strongly suggested* that you use the
 ; pwhash.php script to generate a hashed password and store that
 ; instead of the normal clear text password.  Keeping your passwords
 ; in hashed form ensures that they cannot be found, even if this file
@@ -119,7 +119,26 @@ bind-user-IP = true
 ; Note that the timeout happens regardless of whether there is any user 
 ; activity. After the timeout expires, the user is prompted again for his/her
 ; password, and can then continue the session. 
+; 
+; Note that most PHP configurations also remove sessions after a period of 
+; inactivity. 
+; 
 ; Set to 0 to disable authentication timeouts. 
 
 timeout = 180
+
+
+; If 'enable-rate-limiting' is set to 'true', PHP Shell will limit the number 
+; of login attempts a remote computer can attempt. Enabling this is an 
+; important security measure against someone attempting to brute-force the 
+; users password. If enabled, PHP Shell will require a user to wait a number of
+; seconds between each failed login attempt, where the amount of wait time 
+; rises exponentially if multiple failed login attempts are made. 
+; 'rate-limit-file' should be set to a filename where PHP Shell can save 
+; failed login attempts. If it is unset PHP Shell creates a file in the 
+; temporary directory, named something like 
+; /tmp/floodcontrol_f0a60f340381c160141baa6d1f058f63 . 
+
+enable-rate-limiting = true
+rate-limit-file = 
 
