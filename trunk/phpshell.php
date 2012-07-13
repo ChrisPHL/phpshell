@@ -736,8 +736,11 @@ if ($newsession) {
 }
 
 session_start();
-if ($_SESSION == array()) {
+if (!$newsession && $_SESSION == array()) {
     $expiredsession = True;
+    // Either the session expired, or the client invented its own session cookie. 
+    // Don't allow the client to choose a session ID. 
+    reset_session_id();
 }
 
 
