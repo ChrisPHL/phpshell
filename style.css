@@ -76,7 +76,7 @@ label {
   background-color: rgb(255, 150, 150);
   border: medium solid rgb(255, 60, 60);
   padding: 0.5em;
-  margin: 0.25em;
+  margin: 0.25em 0;
 }
 .pwd {
   font-family: monospace;
