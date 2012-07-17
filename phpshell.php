@@ -253,8 +253,17 @@ function reset_csrf_token() {
     $_SESSION['csrf_token'] = base64_encode(get_random_bytes(16));
 }
 
+// Re-generate a session id. Only has effect if session_start is called lateron.
 function reset_session_id() {
-    return session_id(bin2hex(get_random_bytes(16)));
+    $newid = bin2hex(get_random_bytes(16));
+    return session_id($newid);
+}
+
+// Generate a new session id for a running session. 
+function reset_session() {
+    session_destroy();
+    reset_session_id();
+    session_start();
 }
 
 
@@ -400,9 +409,7 @@ function builtin_editor($arg) {
 
 function builtin_logout($arg = null) {
 
-    session_destroy();
-    reset_session_id();
-    session_start();
+    reset_session();
 
     /* Empty the session data, except for the 'authenticated' entry which the
      * rest of the code needs to be able to check. */
@@ -519,6 +526,8 @@ class RateLimit {
                 $fh_stat['ino'] === $name_stat['ino'];
         }
     
+    // returns an array with the current timeout and the next timeout if the 
+    // user needs to try again. 
     function get_timeout() {
         if (!file_exists($this->filename)) {
             return 0;
@@ -541,7 +550,8 @@ class RateLimit {
             // start counting only on the third failed try
             $timeout = (int) pow(2, $record['count']-2);
             $waited = time() - $record['timestamp'];
-            return max(0, $timeout - $waited);
+            $nexttimeout = (int) pow(2, $record['count']-1);
+            return array(max(0, $timeout - $waited), $nexttimeout);
         }
     }
 
@@ -594,12 +604,13 @@ class RateLimit {
 // attempt to authenticate but prevent brute forcing
 function try_authenticate($username, $password) {
     global $ini, $warning;
+    $nextwait = 0;
     if ($ini['settings']['enable-rate-limiting']) {
         $rl = new RateLimit();
-        $wait = $rl->get_timeout();
+        list ($wait, $nextwait) = $rl->get_timeout();
         if ($wait) {
             $minutes = floor($wait / 60);
-            $waittxt = $minutes ? $minutes.' minutes ' : '';
+            $waittxt = $minutes ? $minutes.' minutes and ' : '';
             $waittxt .= ($wait % 60).' seconds';
             $warning .= "<p class='warning'>Error: Too many failed login attempts, 
                 please wait <span id='waitcount'>$waittxt</span> more before 
@@ -616,7 +627,14 @@ function try_authenticate($username, $password) {
     } else {
         $authenticated = authenticate($username, $password);
     }
-    if (!$authenticated) {
+    if (!$authenticated && $nextwait >= 2) {
+        $minutes = floor($nextwait / 60);
+        $waittxt = $minutes ? $minutes.' minutes and ' : '';
+        $waittxt .= ($nextwait % 60).' seconds';
+        $warning .= "<p class=\"error\">Login failed, please try again in 
+            <span id='waitcount'>$waittxt</span>:</p>
+            <script>startcountdown($nextwait, 'waitcount')</script>\n";
+    } elseif (!$authenticated) {
         $warning .= "<p class=\"error\">Login failed, please try again:</p>\n";
     }
     return $authenticated;
@@ -744,8 +762,8 @@ session_start();
 if (!$newsession && $_SESSION == array()) {
     $expiredsession = True;
     // Either the session expired, or the client invented its own session cookie. 
-    // Don't allow the client to choose a session ID. 
-    reset_session_id();
+    // Don't allow the client to choose their own session ID. 
+    reset_session();
 }
 
 
@@ -830,9 +848,7 @@ if (isset($_SESSION['nonce']) && isset($_POST['nonce']) &&
         // For security purposes, reset the session ID if we just logged in. 
         // Preserve session parameters, re-login may be caused by e.g. a timeout. 
         $session = $_SESSION;
-        session_destroy();
-        reset_session_id();
-        session_start();
+        reset_session();
         $_SESSION = $session;
         unset($session);
         reset_csrf_token();
@@ -877,7 +893,7 @@ if ($_SESSION['authenticated']) {
     if (isset($_FILES['uploadfile']['tmp_name'])) {
         if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
             if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
-                echo "CANNOT MOVE {$_FILES['uploadfile']['name']}" ;
+                $warning .= "<p class='warning'>Error: cannot move {$_FILES['uploadfile']['name']}</p>\n" ;
             }
         }
     }
@@ -1045,7 +1061,7 @@ if ($_SESSION['authenticated']) {
       var minutes = Math.floor(seconds / 60);
       var text = (seconds % 60)+' seconds';
       if (minutes > 0) {
-        text = minutes+' minutes '+text;
+        text = minutes+' minutes and '+text;
       }
       targetnode.innerHTML = text;
       if(seconds == 0){
