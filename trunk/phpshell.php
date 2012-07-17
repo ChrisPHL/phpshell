@@ -598,8 +598,13 @@ function try_authenticate($username, $password) {
         $rl = new RateLimit();
         $wait = $rl->get_timeout();
         if ($wait) {
+            $minutes = floor($wait / 60);
+            $waittxt = $minutes ? $minutes.' minutes ' : '';
+            $waittxt .= ($wait % 60).' seconds';
             $warning .= "<p class='warning'>Error: Too many failed login attempts, 
-                please wait $wait seconds more before re-trying to log in.</p>";
+                please wait <span id='waitcount'>$waittxt</span> more before 
+                re-trying to log in.</p><script>startcountdown($wait, 'waitcount');
+                </script>\n";
             return False;
         }
         $authenticated = authenticate($username, $password);
@@ -1033,6 +1038,23 @@ if ($_SESSION['authenticated']) {
         document.shell.changedirectory.value=document.shell.dirselected.value ; 
         document.shell.submit() ;
     }
+
+  function startcountdown(seconds, target) {
+    var targetnode = document.getElementById(target);
+    var timerId = setInterval(function(){
+      var minutes = Math.floor(seconds / 60);
+      var text = (seconds % 60)+' seconds';
+      if (minutes > 0) {
+        text = minutes+' minutes '+text;
+      }
+      targetnode.innerHTML = text;
+      if(seconds == 0){
+        clearInterval(timerId);
+      }
+      seconds--;
+    }, 1000 );
+  }
+
   </script>
 </head>
 
@@ -1069,7 +1091,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
         echo "<p class='warning' style='background-color: transparent'><b>Security warning:</b> 
             You are using an unencrypted connection, your password will be sent unencrypted in 
             cleartext across the internet. Try using <a href='https://".htmlescape($_SERVER['HTTP_HOST'].
-            $_SERVER['SCRIPT_URL'])."'>PHP Shell over HTTPS</a>, or if that does not work, try 
+            $_SERVER['REQUEST_URI'])."'>PHP Shell over HTTPS</a>, or if that does not work, try 
             contacting your system administrator or hosting provider on how to set up HTTPS 
             support</p>\n";
     }
