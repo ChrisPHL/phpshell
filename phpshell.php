@@ -491,7 +491,7 @@ class RateLimit {
 
     function serialize_table($table) {
         $a = array();
-        foreach($table as $ip => $row) {
+        foreach ($table as $ip => $row) {
             $a[] = "$ip {$row['count']} {$row['timestamp']}\n";
         }
         return implode('', $a);
@@ -614,7 +614,7 @@ function try_authenticate($username, $password) {
             $waittxt .= ($wait % 60).' seconds';
             $warning .= "<p class='warning'>Error: Too many failed login attempts, 
                 please wait <span id='waitcount'>$waittxt</span> more before 
-                re-trying to log in.</p><script>startcountdown($wait, 'waitcount');
+                re-trying to log in.</p><script type='text/javascript'>startcountdown($wait, 'waitcount');
                 </script>\n";
             return False;
         }
@@ -633,14 +633,14 @@ function try_authenticate($username, $password) {
         $waittxt .= ($nextwait % 60).' seconds';
         $warning .= "<p class=\"error\">Login failed, please try again in 
             <span id='waitcount'>$waittxt</span>:</p>
-            <script>startcountdown($nextwait, 'waitcount')</script>\n";
+            <script type='text/javascript'>startcountdown($nextwait, 'waitcount')</script>\n";
     } elseif (!$authenticated) {
         $warning .= "<p class=\"error\">Login failed, please try again:</p>\n";
     }
     return $authenticated;
 }
 
-// returns True if authentication was succesful, False if not
+// returns True if authentication was successful, False if not
 function authenticate($username, $password) {
     global $ini, $warning;
 
@@ -1125,6 +1125,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
   <input name="nonce" type="hidden" value="<?php echo $_SESSION['nonce']; ?>">
 
 </fieldset>
+</form>
 
 <?php } else { /* Authenticated. */ ?>
 
