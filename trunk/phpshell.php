@@ -123,7 +123,12 @@ function get_random_bytes($len) {
  * don't print non-utf8 bytes to the terminal. And anyway browsers can deal 
  * with any strange content thrown at them. */
 function htmlescape($value) {
-    // exists since php 4.0.6
+
+    if (version_compare(PHP_VERSION, '5.4', '>=') {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | 'UTF-8');
+    }
+
+    // For php 5.3 we could also use the ENT_IGNORE flag, but this works since php 4.0.6
     if (function_exists('mb_convert_encoding')) {
         /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
         $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
@@ -132,7 +137,7 @@ function htmlescape($value) {
     // The encoding parameter was only added in php 4.1, but the default will 
     // work for us as all characters that are important for html are in the 
     // ascii range. 
-        htmlspecialchars($value, ENT_COMPAT));
+        htmlspecialchars($value, ENT_QUOTES));
 }
 
 /* define sha512-function - if possible */
@@ -177,7 +182,7 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
     $io = array();
     $pipes = array(1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
     if ($fd9) $pipes[9] = array('pipe', 'w');
-    $p = proc_open(add_dir($cmd, $_SESSION['cwd']), $pipes, $io);
+    $p = proc_open(add_dir($cmd, $dir), $pipes, $io);
 
     /* 
      * Read output using stream_select. Reading the pipes sequentially could
