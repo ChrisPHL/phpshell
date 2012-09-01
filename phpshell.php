@@ -124,7 +124,7 @@ function get_random_bytes($len) {
  * with any strange content thrown at them. */
 function htmlescape($value) {
 
-    if (version_compare(PHP_VERSION, '5.4', '>=') {
+    if (version_compare(PHP_VERSION, '5.4', '>=')) {
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | 'UTF-8');
     }
 
