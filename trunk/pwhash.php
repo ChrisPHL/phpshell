@@ -13,14 +13,14 @@ require_once 'PasswordHash.php';
 function stripslashes_deep($value) 
 {
     if (is_array($value)) {
-    return array_map('stripslashes_deep', $value);
+        return array_map('stripslashes_deep', $value);
     } else {
-    return stripslashes($value);
+        return stripslashes($value);
     }
 }
 
 if (get_magic_quotes_gpc()) {
-  $_POST = stripslashes_deep($_POST);
+    $_POST = stripslashes_deep($_POST);
 }
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';
@@ -51,7 +51,8 @@ if (empty($ini['settings'])) {
 
 <h1>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 <p>
-This password hasher creates salted and hashed password entries for your PHP shell config files.
+This password hasher creates salted and hashed password entries for your 
+PHP shell config files.
 </p>
 
 <form action="" method="post">
@@ -65,8 +66,11 @@ This password hasher creates salted and hashed password entries for your PHP she
   <label for="password">Password:</label>
   <input name="password" id="password" type="password" 
          value="<?php echo htmlspecialchars($password) ?>"/>
-  <input type="radio" name="showhidepass" value="show" onclick="document.getElementById('password').type='text'"/>Show Password / 
-  <input type="radio" name="showhidepass" value="hide" onclick="document.getElementById('password').type='password'" checked="checked"/>Hide Password
+  <input type="radio" name="showhidepass" value="show" 
+         onclick="document.getElementById('password').type='text'"/>Show Password /
+  <input type="radio" name="showhidepass" value="hide" 
+         onclick="document.getElementById('password').type='password'" 
+         checked="checked"/>Hide Password
 
 </fieldset>
 
@@ -75,9 +79,9 @@ This password hasher creates salted and hashed password entries for your PHP she
 
 <?php
 if ($username == '' || $password == '') {
-  echo "  <p><i>Enter a username and a password and update.</i></p>\n";
+    echo "  <p><i>Enter a username and a password and update.</i></p>\n";
 } else {
-	$u = strtolower($username);
+    $u = strtolower($username);
     /* some reserved words are not allowed as username, because there is a 
        restriction in parse_ini_string() 
        (http://php.net/manual/en/function.parse-ini-string.php) */
@@ -95,14 +99,16 @@ END;
         echo "in the <tt>[users]</tt> section:</p>\n";
 
         $portablehashes = $ini['settings']['portable-hashes'];
-        if ($portablehashes !== True) {
-            $portablehashes = False;
+        if ($portablehashes !== true) {
+            $portablehashes = false;
         }
         $phpass = new PasswordHash(11, $portablehashes);
         $hash = $phpass->HashPassword($password);
 
-        echo "<pre>".htmlentities($u)." = &quot;$hash&quot;</pre>\n";
-        echo "<p>After you have done that, you can return to <a href=\"phpshell.php\">phpshell.php</a> and login.</p>\n";
+        echo "<pre>".htmlentities($u)." = &quot;$hash&quot;</pre>\n"; ?>
+        <p>After you have done that, you can return to 
+        <a href="phpshell.php">phpshell.php</a> and login.</p> 
+        <?php
     }
 }
 ?>
