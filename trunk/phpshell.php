@@ -177,7 +177,7 @@ function exec_test_cwd($cmd, $directory) {
  * The return value is an array containing array(status, stdout[, stderr][, fd9]) 
  * with the last two possibly being omitted. 
  */
-function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
+function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
 
     $io = array();
     $pipes = array(1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
@@ -201,7 +201,7 @@ function exec_command($cmd, $dir, $mergeoutput=False, $fd9=False) {
 
     $out = $err = $out9 = '';
 
-    while (True) {
+    while (true) {
         // we need to recreate $read each time, because it gets modified in
         // stream_select. Also, we just want to select on those pipes that are
         // not closed yet. 
@@ -291,7 +291,7 @@ function runcommand($cmd) {
         $cmd." \n".   # extra space in case the command ends in \
         "pwd >&9\n";
 
-    list($status, $out, $newcwd) = exec_command($command, $_SESSION['cwd'], True, True);
+    list($status, $out, $newcwd) = exec_command($command, $_SESSION['cwd'], true, true);
 
     // trim because 'pwd' adds a newline
     if (strlen($newcwd) > 0 && $newcwd{0} == '/')
@@ -466,7 +466,7 @@ class RateLimit {
         global $ini;
         if (strlen(trim($ini['settings']['rate-limit-file']))) {
             $this->filename = $ini['settings']['rate-limit-file'];
-            $this->intemp = False;
+            $this->intemp = false;
         } else {
             $tempdir = function_exists('sys_get_temp_dir') ? sys_get_temp_dir() : '';
             if (!@is_dir($tempdir)) {
@@ -477,7 +477,7 @@ class RateLimit {
             }
             // the md5 is not for security, just obfuscation
             $this->filename = $tempdir.'/floodcontrol_'.md5('PHP Shell '.$_SERVER['SERVER_NAME']);
-            $this->intemp = True;
+            $this->intemp = true;
         }
     }
 
@@ -621,7 +621,7 @@ function try_authenticate($username, $password) {
                 please wait <span id='waitcount'>$waittxt</span> more before 
                 re-trying to log in.</p><script type='text/javascript'>startcountdown($wait, 'waitcount');
                 </script>\n";
-            return False;
+            return false;
         }
         $authenticated = authenticate($username, $password);
         if ($authenticated) {
@@ -645,12 +645,12 @@ function try_authenticate($username, $password) {
     return $authenticated;
 }
 
-// returns True if authentication was successful, False if not
+// returns true if authentication was successful, false if not
 function authenticate($username, $password) {
     global $ini, $warning;
 
     if (!isset($ini['users'][$username])) {
-        return False;
+        return false;
     }
     $ini_username = $ini['users'][$username];
     // Plaintext passwords should probably be deprecated/removed. They are not
@@ -718,20 +718,20 @@ if (empty($ini['settings'])) {
 /* Default settings --- these settings should always be set to something. */
 $default_settings = array(
     'home-directory'        => '.',
-    'safe-mode-warning'     => True,
-    'file-upload'           => False,
+    'safe-mode-warning'     => true,
+    'file-upload'           => false,
     'PS1'                   => '$ ',
-    'portable-hashes'       => False, 
-    'bind-user-IP'          => True, 
+    'portable-hashes'       => false, 
+    'bind-user-IP'          => true, 
     'timeout'               => 180,
-    'enable-rate-limiting'  => True,
+    'enable-rate-limiting'  => true,
     'rate-limit-file'       => '');
 // Controls if we are in editor mode
 $showeditor = false;
 // Show warning if we're editing a file we can't write to
 $writeaccesswarning = false;
 // Did we try to authenticate the users password during this request?
-$passwordchecked = False;
+$passwordchecked = false;
 // Append any html to this string for warning/error messages
 $warning = '';
 
@@ -743,20 +743,20 @@ $ini['settings'] = array_merge($default_settings, $ini['settings']);
 
 $newsession = !isset($_COOKIE[session_name()]);
 $https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-$expiredsession = False;
+$expiredsession = false;
 
 ini_set('session.use_only_cookies', '1');
 
 if (version_compare(PHP_VERSION, '5.2.0', '>=')) {
     session_set_cookie_params(0,    // cookie lifetime until browser closes
         $_SERVER['REQUEST_URI'],    // bind cookie to this specific URI
-        Null,                       // use default domain (www.site.com)
+        null,                       // use default domain (www.site.com)
         $https,                     // If called over HTTPS, lock cookie to that
-        True                        // httponly, available since PHP 5.2
+        true                        // httponly, available since PHP 5.2
     );
 } else {
     // same as above, but without 'httponly'
-    session_set_cookie_params(0, $_SERVER['REQUEST_URI'], Null, $https);
+    session_set_cookie_params(0, $_SERVER['REQUEST_URI'], null, $https);
 }
 
 if ($newsession) {
@@ -765,7 +765,7 @@ if ($newsession) {
 
 session_start();
 if (!$newsession && $_SESSION == array()) {
-    $expiredsession = True;
+    $expiredsession = true;
     // Either the session expired, or the client invented its own session cookie. 
     // Don't allow the client to choose their own session ID. 
     reset_session();
@@ -825,15 +825,15 @@ if (isset($_POST['logout'])) {
 }
 // Enforce session security settings
 if (!isset($_SESSION['authenticated'])) {
-    $_SESSION['authenticated'] = False;
+    $_SESSION['authenticated'] = false;
 }
 if (!$newsession && $_SESSION['authenticated']) {
     if ($ini['settings']['bind-user-IP'] && $_SESSION['user-IP'] != $_SERVER['REMOTE_ADDR']) {
-        $_SESSION['authenticated'] = False;
+        $_SESSION['authenticated'] = false;
     }
     if ($ini['settings']['timeout'] != 0 && 
             (time() - $_SESSION['login-timestamp']) / 60 > $ini['settings']['timeout']) {
-        $_SESSION['authenticated'] = False;
+        $_SESSION['authenticated'] = false;
     }
 }
 
@@ -846,7 +846,7 @@ $command  = isset($_POST['command'])  ? $_POST['command']  : '';
 if (isset($_SESSION['nonce']) && isset($_POST['nonce']) && 
         $_POST['nonce'] == $_SESSION['nonce'] && isset($_POST['login'])) {
     unset($_SESSION['nonce']);
-    $passwordchecked = True; 
+    $passwordchecked = true; 
 
     $_SESSION['authenticated'] = try_authenticate($username, $password);
     if ($passwordchecked && $_SESSION['authenticated']) {
@@ -933,7 +933,7 @@ if ($_SESSION['authenticated']) {
         $status<strlen($_POST['filecontent']), because the pipe has a kernel 
         buffer of a few kilobytes. So we don't show the number of actually 
         written bytes in the error message, just that something went wrong. */
-        if ($status === FALSE or $status < strlen($content)) {
+        if ($status === false or $status < strlen($content)) {
             $_SESSION['output'] .= "editor: Error saving editor content to ".htmlescape($_POST['filetoedit'])."\n";
         }
         // close immediately to let the shell know we are done. 
