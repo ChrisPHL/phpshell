@@ -1,7 +1,7 @@
 <?php
 /*
  * pwhash.php file for PHP Shell
- * Copyright (C) 2005-2012 the Phpshell-team
+ * Copyright (C) 2005-2013 the Phpshell-team
  * Licensed under the GNU GPL.  See the file COPYING for details.
  *
  */
@@ -67,9 +67,9 @@ PHP shell config files.
   <input name="password" id="password" type="password" 
          value="<?php echo htmlspecialchars($password) ?>"/>
   <input type="radio" name="showhidepass" value="show" 
-         onclick="document.getElementById('password').type='text'"/>Show Password /
+         onclick="document.getElementById('password').type='text';"/>Show Password /
   <input type="radio" name="showhidepass" value="hide" 
-         onclick="document.getElementById('password').type='password'" 
+         onclick="document.getElementById('password').type='password';" 
          checked="checked"/>Hide Password
 
 </fieldset>

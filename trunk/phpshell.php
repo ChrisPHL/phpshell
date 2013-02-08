@@ -11,7 +11,7 @@ define('PHPSHELL_VERSION', '2.4');
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2012 the Phpshell-team
+  Copyright (C) 2000-2013 the Phpshell-team
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -73,7 +73,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2012, the Phpshell-team. Get the latest
+  Copyright &copy; 2000&ndash;2013, the Phpshell-team. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
@@ -1035,7 +1035,7 @@ if ($_SESSION['authenticated']) {
   function init() {
     document.shell.setAttribute("autocomplete", "off");
     document.getElementById('output').scrollTop = document.getElementById('output').scrollHeight;
-    document.shell.command.focus()
+    document.shell.command.focus();
   }
 
   <?php } elseif ($_SESSION['authenticated'] && $showeditor) { ?>
@@ -1069,7 +1069,7 @@ if ($_SESSION['authenticated']) {
         text = minutes+' minutes and '+text;
       }
       targetnode.innerHTML = text;
-      if(seconds == 0){
+      if(seconds === 0){
         clearInterval(timerId);
       }
       seconds--;
@@ -1272,7 +1272,7 @@ instruction on how to use PHP Shell.</p>
 
 <hr>
 <address>
-Copyright &copy; 2000&ndash;2012, the Phpshell-team. Get the
+Copyright &copy; 2000&ndash;2013, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
