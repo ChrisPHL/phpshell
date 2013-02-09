@@ -617,7 +617,7 @@ function try_authenticate($username, $password) {
             $minutes = floor($wait / 60);
             $waittxt = $minutes ? $minutes.' minutes and ' : '';
             $waittxt .= ($wait % 60).' seconds';
-            $warning .= "<p class='warning'>Error: Too many failed login attempts, 
+            $warning .= "<p class='warning'><b>Error:</b> Too many failed login attempts, 
                 please wait <span id='waitcount'>$waittxt</span> more before 
                 re-trying to log in.</p><script type='text/javascript'>startcountdown($wait, 'waitcount');
                 </script>\n";
@@ -672,7 +672,7 @@ function authenticate($username, $password) {
     if (strchr($ini_username, ':') === false) {
         // No seperator found, assume this is a password in clear text.
         $warning .= <<<END
-<div class="warning">Warning: Your account uses an 
+<div class="warning"><b>Warning:</b> Your account uses an 
 unhashed password in config.php.<br> Please change it to a more 
 secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
 warning is displayed only once after login. You may continue using 
@@ -683,7 +683,7 @@ END;
         // old style hash
         list($fkt, $salt, $hash) = explode(':', $ini_username);
         $warning .= <<<END
-<div class="warning">Warning: Your account uses a weakly hashed 
+<div class="warning"><b>Warning:</b> Your account uses a weakly hashed 
 password in config.php.<br> Please change it to a new more 
 secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
 warning is displayed only once after login. You may continue using 
@@ -1099,7 +1099,8 @@ if (!$_SESSION['authenticated']) {
 if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
 
 <div class="warning">
-Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. See the <a href="SECURITY">SECURITY</a> file for some background information about Safe Mode and its effects on PHP Shell.
+<b>Warning:</b> <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. 
+See the <a href="SECURITY">SECURITY</a> file for some background information about Safe Mode and its effects on PHP Shell.
 </div>
 
 <?php } /* Safe mode. */ ?>
@@ -1109,12 +1110,13 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
 
   <?php
     if (!$https) {
-        echo "<p class='warning' style='background-color: transparent'><b>Security warning:</b> 
-            You are using an unencrypted connection, your password will be sent unencrypted in 
+        echo "<p class='warning'><b>Security warning:</b> 
+            You are using an unencrypted connection, this is not recommended. Everything 
+            (your username, password and all your commands and results) will be sent unencrypted in 
             cleartext across the internet. Try using <a href='https://".htmlescape($_SERVER['HTTP_HOST'].
             $_SERVER['REQUEST_URI'])."'>PHP Shell over HTTPS</a>, or if that does not work, try 
             contacting your system administrator or hosting provider on how to set up HTTPS 
-            support</p>\n";
+            support.</p>\n";
     }
     echo $warning;
     if (!$passwordchecked) {
@@ -1177,7 +1179,7 @@ Warning: <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. P
                 echo '</select>';
             }
         } else {
-            echo "[current directory not readable]";
+            echo "<br/><b>Notice:</b> current directory not readable.";
         }  
     }
 ?>
