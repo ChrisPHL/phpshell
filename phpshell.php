@@ -52,6 +52,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
+  <meta name="robots" content="noindex, follow">
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -66,8 +67,8 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   </p></form>
   <hr>
 
-  <p>Please consult the <a href="README">README</a>, <a
-  href="INSTALL">INSTALL</a>, and <a href="SECURITY">SECURITY</a> files for
+  <p>Please consult the <a href="README" rel="nofollow">README</a>, <a
+  href="INSTALL" rel="nofollow">INSTALL</a>, and <a href="SECURITY" rel="nofollow">SECURITY</a> files for
   instruction on how to use PHP Shell.</p>
 
   <hr>
@@ -1005,6 +1006,7 @@ if ($_SESSION['authenticated']) {
   <meta http-equiv="Content-Script-Type" content="text/javascript">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
+  <meta name="robots" content="noindex, follow">
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 
@@ -1266,8 +1268,8 @@ echo $warning;
 
 <hr>
 
-<p>Please consult the <a href="README">README</a>, <a
-href="INSTALL">INSTALL</a>, and <a href="SECURITY">SECURITY</a> files for
+<p>Please consult the <a href="README" rel="nofollow">README</a>, <a
+href="INSTALL" rel="nofollow">INSTALL</a>, and <a href="SECURITY" rel="nofollow">SECURITY</a> files for
 instruction on how to use PHP Shell.</p>
 <p>If you have not created accounts for phpshell, please use 
 <a href="pwhash.php">pwhash.php</a> to create secure passwords.</p>

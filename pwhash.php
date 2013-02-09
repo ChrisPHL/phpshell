@@ -43,6 +43,7 @@ if (empty($ini['settings'])) {
   <title>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></title>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <meta name="generator" content="phpshell"/>
+  <meta name="robots" content="noindex, follow"/>
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico"/>
   <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
@@ -123,7 +124,7 @@ END;
 <hr/>
 
 <address>
-  Copyright &copy; the Phpshell-team, please see <a href="AUTHORS">AUTHORS</a>.
+  Copyright &copy; the Phpshell-team, please see <a href="AUTHORS" rel="nofollow">AUTHORS</a>.
   This is PHP Shell <?php echo PHPSHELL_VERSION ?>, get the latest version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
