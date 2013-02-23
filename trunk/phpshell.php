@@ -162,11 +162,7 @@ function exec_cwd($cmd, $directory) {
     return $stdout;
 }
 
-/* return exit code of command */
-function exec_test_cwd($cmd, $directory) {
-    list($status, $stderr, $stderr) = exec_command($cmd, $directory);
-    return $status;
-}
+
 
 /* 
  * Where the real magic happens
@@ -311,17 +307,18 @@ function builtin_download($arg) {
     }
 
     /* test if file exists */
-    if (exec_test_cwd("test -e ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
         $_SESSION['output'] .= "download: file not found: '$arg'\n";
         return;
     }
 
-    if (exec_test_cwd("test -r ".escapeshellarg($arg), $_SESSION['cwd']) != 0) {
+    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
         $_SESSION['output'] .= "download: Permission denied for file '$arg'\n";
         return;
     }
 
-    $filesize = trim(exec_cwd("stat -c%s ".escapeshellarg($arg), $_SESSION['cwd']));
+    $filesize = filesize ($_SESSION['cwd'] . '/' . $arg);
 
     // We can't use exec_command because we need access to the pipe
     $io = array();
@@ -371,43 +368,39 @@ function builtin_editor($arg) {
         return;
     }
 
-    $escarg = escapeshellarg($arg);
     $filetoedit = $arg;
 
-    if (exec_test_cwd("test -e $escarg", $_SESSION['cwd']) != 0) {
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
         // file does not exist
         $editorcontent = '';
         $showeditor = true;
 
         // test current directory for write access
-        if (exec_test_cwd("test -w .", $_SESSION['cwd']) != 0) {
+        if (!is_writeable($_SESSION['cwd'])) {
             $writeaccesswarning = true;
         }
 
     } else {
 
-        if (exec_test_cwd("test -f $escarg", $_SESSION['cwd']) != 0) {
+        if (!is_file($_SESSION['cwd'] . '/' . $arg)) {
             $_SESSION['output'] .= "editor: file '$arg' not found or not a regular file\n";
             return;
         }
 
-        if (exec_test_cwd("test -r $escarg", $_SESSION['cwd']) != 0) {
+        if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
             $_SESSION['output'] .= "editor: Permission denied for file '$arg'\n";
             return;
         }
 
-        // test write access
-        if (exec_test_cwd("test -w $escarg", $_SESSION['cwd']) != 0) {
+        if (!is_writeable($_SESSION['cwd'] . '/' . $arg)) {
             $writeaccesswarning = true;
         }
 
-        list($status, $output, $error) = exec_command("cat $escarg", $_SESSION['cwd']);
-        if ($status != 0) {
-            $_SESSION['output'] .= "editor: error: ".htmlescape($error)."\n";
-        } else {
-            $editorcontent = htmlescape($output);
-            $showeditor = true;
-        }
+        // file_get_contents() would be possible instead of implode('', file(...)),
+        // but that should work with php < 4.3
+        $editorcontent = implode('', file($_SESSION['cwd'] . '/' . $arg));
+        $showeditor = true;
     }
 
     return;
@@ -1205,11 +1198,11 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
 </div>
 
 <?php } else { /* Output the 'editor' */ 
-print "You are editing this file: <code>$filetoedit</code>\n"; 
+print "You are editing this file: <code>" . htmlescape($filetoedit) . "</code>\n"; 
 if ($writeaccesswarning) { ?>
 
 <div class="warning">
-  <p><b>Warning:</b> You may not have write access to <code><?php echo $filetoedit; ?></code></p>
+  <p><b>Warning:</b> You may not have write access to <code><?php echo htmlescape($filetoedit); ?></code></p>
 </div>
 
 <?php 
@@ -1220,7 +1213,7 @@ echo $warning;
 <div id="terminal">
 <textarea name="filecontent" id="filecontent" cols="<?php echo $columns ?>" rows="<?php echo $rows ?>">
 <?php
-    print($editorcontent);
+    print(htmlescape($editorcontent));
 ?>
 </textarea>
 </div>
