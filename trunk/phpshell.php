@@ -889,11 +889,16 @@ if ($_SESSION['authenticated']) {
             }
         }
     }
+
+    /* handle file uploads */
+    $uploaderror = 0;
     if (isset($_FILES['uploadfile']['tmp_name'])) {
         if (is_uploaded_file($_FILES['uploadfile']['tmp_name'])) {
             if (!move_uploaded_file($_FILES['uploadfile']['tmp_name'], $_SESSION['cwd'] . '/' . $_FILES['uploadfile']['name'])) { 
                 $warning .= "<p class='warning'>Error: cannot move {$_FILES['uploadfile']['name']}</p>\n" ;
             }
+        } elseif (isset($_FILES['uploadfile']['error']) && $_FILES['uploadfile']['error'] != 0) {
+            $uploaderror = $_FILES['uploadfile']['error'];
         }
     }
 
@@ -1130,7 +1135,6 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
 </form>
 
 <?php } else { /* Authenticated. */ ?>
-
 <fieldset>
   <!--legend style="background-color: transparent">Script Directory: <code><?php
      echo htmlescape(dirname(__FILE__));
@@ -1245,15 +1249,29 @@ echo $warning;
 </form>
 
 <?php if ($ini['settings']['file-upload']) { ?>
-<br><br>
 <form name="upload" enctype="multipart/form-data" action="" method="post">
+<div><br><br>
 <input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
 <fieldset>
   <legend>File upload</legend>
+<?php
+    if (isset($_FILES['uploadfile']['tmp_name']) && $uploaderror >0) {
+        $uploaderrors = array(
+            0=>"There is no error, the file uploaded with success",
+            1=>"The uploaded file exceeds the upload_max_filesize directive in php.ini",
+            2=>"The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form",
+            3=>"The uploaded file was only partially uploaded",
+            4=>"No file was uploaded",
+            6=>"Missing a temporary folder"
+        ); 
+        echo "<p class='warning'>File Upload error: $uploaderrors[$uploaderror]</p>";
+    }
+?>
     Select file for upload:
     <input type="file" name="uploadfile" size="40"><br>
 <input type="submit" value="Upload file">
 </fieldset>
+</div>
 </form>
     <?php } ?>
 
