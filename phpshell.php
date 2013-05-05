@@ -306,24 +306,23 @@ function builtin_download($arg) {
         return;
     }
 
+    if ($arg[0] != '/')  {
+        $downloadfn = $_SESSION['cwd'] . '/' . $arg ;
+    } else {
+        $downloadfn = $arg ;
+    }
+  
     /* test if file exists */
     clearstatcache();
-    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
+    if (!file_exists($downloadfn)) {
         $_SESSION['output'] .= "download: file not found: '$arg'\n";
         return;
     }
 
-    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
+    if (!is_readable($downloadfn)) {
         $_SESSION['output'] .= "download: Permission denied for file '$arg'\n";
         return;
     }
-
-    $filesize = filesize ($_SESSION['cwd'] . '/' . $arg);
-
-    // We can't use exec_command because we need access to the pipe
-    $io = array();
-    $p = proc_open(add_dir('cat '.escapeshellarg($arg), $_SESSION['cwd']), 
-                   array(1 => array('pipe', 'w')), $io);
 
     /* Passing a filename correctly in a content disposition header is nigh 
      * impossible. If the filename is unsafe, we just pass nothing and let the
@@ -347,16 +346,13 @@ function builtin_download($arg) {
     header('Content-Transfer-Encoding: binary');
     header('Expires: 0');
     header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0');
-    if ($filesize) header('Content-Length: '.$filesize);
-
-    /* Read output from cat. */
-    fpassthru($io[1]);
-    
-    fclose($io[1]);
-    proc_close($p);
-
-    die();
-    return;
+    if (filesize($downloadfn)) {
+        header('Content-Length: '.filesize($downloadfn));
+    }
+    ob_clean();
+    flush();
+    readfile($downloadfn);
+    exit();
 }
 
 /* This is a tiny editor which you can start calling 'editor file'*/
