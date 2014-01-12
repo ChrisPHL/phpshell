@@ -1132,13 +1132,6 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
 
 <?php } else { /* Authenticated. */ ?>
 <fieldset>
-  <!--legend style="background-color: transparent">Script Directory: <code><?php
-     echo htmlescape(dirname(__FILE__));
-    ?></code> &#9899; Current Directory: <code><?php
-     echo htmlescape($_SESSION['cwd']);
-    ?></code>
-  </legend-->
-
   <legend style="background-color: transparent"><?php echo "Phpshell running on: " . $_SERVER['SERVER_NAME']; ?></legend>
 <?php 
     echo $warning;
