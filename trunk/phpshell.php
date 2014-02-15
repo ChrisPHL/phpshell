@@ -1107,26 +1107,31 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
   <?php
     if (!$https) {
         echo "<p class='warning'><b>Security warning:</b> 
-            You are using an unencrypted connection, this is not recommended. Everything 
-            (your username, password and all your commands and results) will be sent unencrypted in 
-            cleartext across the internet. Try using <a href='https://".htmlescape($_SERVER['HTTP_HOST'].
-            $_SERVER['REQUEST_URI'])."'>PHP Shell over HTTPS</a>, or if that does not work, try 
-            contacting your system administrator or hosting provider on how to set up HTTPS 
-            support.</p>\n";
+            You are using an unencrypted connection, this is not recommended. 
+            Everything (your username, password and all your commands and results) 
+            will be sent unencrypted in cleartext across the internet. Try using 
+            <a href='https://".htmlescape($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])."'>PHP Shell over HTTPS</a>, 
+            or if that does not work, try contacting your system administrator or 
+            hosting provider on how to set up HTTPS support.</p>\n";
     }
     echo $warning;
-    if (!$passwordchecked) {
-        echo "  <p>Please login:</p>\n";
-    }
-  ?>
+    if (empty($ini['users'])) {
+        echo "<p class='warning'><b>Warning:</b>
+            No user accounts are defined. You must <a href=\"pwhash.php\">configure
+            some user accounts</a> before using PHP shell.</p>\n";
+    } else {
+        if (!$passwordchecked) {
+            echo "  <p>Please login:</p>\n";
+        }
 
-  <label for="username">Username:</label>
-  <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
-  <label for="password">Password:</label>
-  <input name="password" id="password" type="password">
-  <p><input type="submit" name="login" value="Login"></p>
-  <input name="nonce" type="hidden" value="<?php echo $_SESSION['nonce']; ?>">
-
+        ?>
+        <label for="username">Username:</label>
+        <input name="username" id="username" type="text" value="<?php echo $username ?>"><br>
+        <label for="password">Password:</label>
+        <input name="password" id="password" type="password">
+        <p><input type="submit" name="login" value="Login"></p>
+        <input name="nonce" type="hidden" value="<?php echo $_SESSION['nonce']; ?>">
+    <?php } ?>
 </fieldset>
 </form>
 
