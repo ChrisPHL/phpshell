@@ -82,12 +82,11 @@ PHP shell config files.
 if ($username == '' || $password == '') {
     echo "  <p><i>Enter a username and a password and update.</i></p>\n";
 } else {
-    $u = strtolower($username);
     /* some reserved words are not allowed as username, because there is a 
        restriction in parse_ini_string() 
        (http://php.net/manual/en/function.parse-ini-string.php) */
-    if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $u)
-        || in_array($u, array('null','yes','no','true','false','on','off', 'none'))
+    if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $username)
+        || in_array($username, array('null','yes','no','true','false','on','off', 'none'))
     ) {
         echo <<<END
 <p class="error">Your username cannot be one of the following reserved words: 
@@ -106,7 +105,7 @@ END;
         $phpass = new PasswordHash(11, $portablehashes);
         $hash = $phpass->HashPassword($password);
 
-        echo "<pre>".htmlentities($u)." = &quot;$hash&quot;</pre>\n"; ?>
+        echo "<pre>".htmlentities($username)." = &quot;$hash&quot;</pre>\n"; ?>
         <p>After you have done that, you can return to 
         <a href="phpshell.php">phpshell.php</a> and login.</p> 
         <?php

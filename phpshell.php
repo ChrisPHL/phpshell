@@ -1277,7 +1277,7 @@ echo $warning;
 href="INSTALL" rel="nofollow">INSTALL</a>, and <a href="SECURITY" rel="nofollow">SECURITY</a> files for
 instruction on how to use PHP Shell.</p>
 <p>If you have not created accounts for phpshell, please use 
-<a href="pwhash.php">pwhash.php</a> to create secure passwords.</p>
+<a href="pwhash.php">pwhash.php</a> to create secure (hashed and salted) passwords.</p>
 
 <hr>
 <address>
