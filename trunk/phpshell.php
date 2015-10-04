@@ -1180,7 +1180,7 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
 
     <?php if (! $showeditor) { /* Outputs the 'terminal' without the editor */ ?>
 
-<div id="terminal">
+<div class="terminal">
 <pre id="output" style="height: <?php echo $rows*2 ?>ex; overflow-y: scroll;">
 <?php
         $lines = substr_count($_SESSION['output'], "\n");
@@ -1188,7 +1188,7 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
         echo rtrim($padding . wordwrap($_SESSION['output'], $columns, "\n", true));
 ?>
 </pre>
-<p id="prompt">
+<p class="prompt">
 <span id="ps1"><?php echo htmlescape($ini['settings']['PS1']); ?></span>
 <input name="command" type="text" onkeyup="key(event)"
        size="<?php echo $columns-strlen($ini['settings']['PS1']); ?>" tabindex="1">

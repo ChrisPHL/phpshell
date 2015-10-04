@@ -19,18 +19,19 @@ img {
   border: none;
 }
 
-div#terminal {
+.terminal {
   border: inset 2px red;
   padding: 2px;
   margin-top: 0.5em;
 }
 
-div#terminal pre, div#terminal textarea { 
+.terminal pre, .terminal textarea { 
   width: 100%;
   border: none;
   margin: 0;
 }
-div#terminal pre, div#terminal textarea, div#terminal input { 
+
+.terminal pre, .terminal textarea, .terminal input { 
   font-size: 120%;
   line-height: 2ex;
 }
@@ -41,12 +42,12 @@ p {
   margin-bottom: 0.5em;
 }
 
-p#prompt {
+.prompt {
   font-family: monospace;
-  margin: 0px;
+  margin: 0;
 }
 
-p#prompt input {
+.prompt input {
   border: none;
   font-family: monospace;
 }
