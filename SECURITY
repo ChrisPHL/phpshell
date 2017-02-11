@@ -34,7 +34,7 @@ to secure PHP, but is nevertheless used in many installations.
 Turning Safe Mode on in PHP basically tries to restrict the language
 and its functions to make it "safe".
 
-This involves a strict check on file ownership so that PHP wont
+This involves a strict check on file ownership so that PHP won't
 operate on files and directories which are not owned by the owner of
 the current script.  Other restrictions in Safe Mode include limits on
 which files can be executed and includes (thus making a primitive form
@@ -149,7 +149,7 @@ Shell password.  So make sure that you tighten security on all fronts
 you know of.
 
 If you use PHP Shell not very often, you can also remove all 
-permissions from the "phpshell" directory as an addtional security
+permissions from the "phpshell" directory as an additional security
 measure, when it is not used, so that the webserver can not access
 PHP Shell (and only set the normal permissions (755 usually in 
 Unix/Linux) when you use it).
@@ -229,7 +229,7 @@ a login attempt fails, this is logged in a file (the location of which
 is configurable). After the third failed log in attempt from one IP 
 address, PHP Shell enforces a timeout during which a user won't be 
 able to log in. The length of the timeout increases exponentially with 
-the number of failed login attempts. After a succesful login, the 
+the number of failed login attempts. After a successful login, the 
 counter is reset. 
 
 

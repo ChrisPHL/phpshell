@@ -184,7 +184,7 @@ function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
     /* 
      * Read output using stream_select. Reading the pipes sequentially could
      * potentially cause a deadlock if the subshell would write a large 
-     * ammount of data to pipe 2 (stderr), while we are reading pipe 1. The
+     * amount of data to pipe 2 (stderr), while we are reading pipe 1. The
      * subshell would then block waiting for us to read pipe 2, and we would
      * block waiting for the subshell to write to pipe 1, resulting in a 
      * deadlock.
@@ -570,7 +570,7 @@ class RateLimit {
         }
     }
 
-    // a succesful login, clear failed login attempts for user
+    // a successful login, clear failed login attempts for user
     function clear_user() {
         if (!file_exists($this->filename)) {
             return;

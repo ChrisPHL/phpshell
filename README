@@ -66,7 +66,7 @@ PHP's mbstring extension. If it is not installed, invalid UTF-8 may be
 sent to the browser (but browsers can deal with that). 
 
 PHP Shell's login rate limiter stores failed login attempts in a file. 
-As multiple instances of PHP may try to acces that file concurrently, 
+As multiple instances of PHP may try to access that file concurrently, 
 PHP Shell needs working flock() support to correctly handle this. 
 Flock does not work on FAT filesystems, some networked filesystems, 
 and when running in multithreaded mode on some servers such as IIS. 
