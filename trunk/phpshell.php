@@ -11,7 +11,7 @@ define('PHPSHELL_VERSION', '2.4');
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2014 the Phpshell-team
+  Copyright (C) 2000-2017 the Phpshell-team
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -74,7 +74,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2014, the Phpshell-team. Get the latest
+  Copyright &copy; 2000&ndash;2017, the Phpshell-team. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
@@ -1281,7 +1281,7 @@ instruction on how to use PHP Shell.</p>
 
 <hr>
 <address>
-Copyright &copy; 2000&ndash;2014, the Phpshell-team. Get the
+Copyright &copy; 2000&ndash;2017, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>
