@@ -3,7 +3,7 @@
 ; being downloaded.
 ;
 ; config.php file for PHP Shell
-; Copyright (C) 2005-2014 the Phpshell-team
+; Copyright (C) 2005-2017 the Phpshell-team
 ; Licensed under the GNU GPL.  See the file COPYING for details.
 
 ; This ini-file has three parts:
@@ -34,7 +34,7 @@
 ; is disclosed.  The passwords are still visible in clear text during
 ; the login, though.  Please follow the instructions given in
 ; pwhash.php.
-
+test = "$2a$11$RIJGT/pmVkrNI6HoxdIX..hzcwQ9FHXpKc19YiEI7aCI6gtgOh4bi"
 
 [aliases]
 
