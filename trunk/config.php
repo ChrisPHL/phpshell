@@ -34,7 +34,6 @@
 ; is disclosed.  The passwords are still visible in clear text during
 ; the login, though.  Please follow the instructions given in
 ; pwhash.php.
-test = "$2a$11$RIJGT/pmVkrNI6HoxdIX..hzcwQ9FHXpKc19YiEI7aCI6gtgOh4bi"
 
 [aliases]
 
