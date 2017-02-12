@@ -24,7 +24,7 @@ define('PHPSHELL_VERSION', '2.4');
   GNU General Public License for more details.
 
   You can get a copy of the GNU General Public License from this
-  address: http://www.gnu.org/copyleft/gpl.html#SEC1
+  address: https://www.gnu.org/licenses/old-licenses/gpl-2.0#SEC1
   You can also write to the Free Software Foundation, Inc., 59 Temple
   Place - Suite 330, Boston, MA  02111-1307, USA.
   
@@ -1095,7 +1095,7 @@ if (!$_SESSION['authenticated']) {
 if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
 
 <div class="warning">
-<b>Warning:</b> <a href="http://php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. 
+<b>Warning:</b> <a href="https://secure.php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. 
 See the <a href="SECURITY">SECURITY</a> file for some background information about Safe Mode and its effects on PHP Shell.
 </div>
 

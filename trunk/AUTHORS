@@ -21,7 +21,7 @@ Gerry Calderhead <caldergf@everythingsucks.co.uk>
 Jeremy Miller <JMiller@marketaxess.com>
   Suggested that one could use Sudo from
 
-    http://www.courtesan.com/sudo/
+    https://www.sudo.ws/
 
   to let PHP Shell execute code with different privileges than the
   webserver.

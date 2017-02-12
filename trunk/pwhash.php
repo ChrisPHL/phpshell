@@ -84,7 +84,7 @@ if ($username == '' || $password == '') {
 } else {
     /* some reserved words are not allowed as username, because there is a 
        restriction in parse_ini_string() 
-       (http://php.net/manual/en/function.parse-ini-string.php) */
+       (https://secure.php.net/manual/en/function.parse-ini-string.php) */
     if (!preg_match('/^[[:alpha:]][[:alnum:]]*$/', $username)
         || in_array($username, array('null','yes','no','true','false','on','off', 'none'))
     ) {
