@@ -97,7 +97,7 @@ even using PHP Shell.  Strange, but true :-)
 If you want to execute code as different user, then it's possible to
 do so by using the Sudo program available from this address:
 
-  http://www.courtesan.com/sudo/
+  https://www.sudo.ws/
 
 The trick is to configure Sudo to allow the user running the webserver
 to execute certain commands as a more privileged user.  This will have
@@ -132,11 +132,13 @@ The commands are executed relative to a current working directory,
 which is written at the top.  You change this by the normal 'cd'
 command (or by selecting a other working directory using the links).
 
-The commands must also be complete, so you cannot enter a multiline command:
+The commands must also be complete, so you cannot enter a multiline command like:
 $ for i in a b c ; do
 > echo $i
 > done
-However, in one line it is allowed: for i in a b c ; do echo $i ; done
+
+However, in one line the for loop is possible:
+$ for i in a b c ; do echo $i ; done
 
 Variables are also not preserved between the commands, so
 $ A=1
@@ -158,16 +160,20 @@ An incomplete list of alternatives to PHP Shell would be:
 
   If your host supports SSH then use it and forget about PHP Shell or
   any other solution.
+  PHP Shell may still be useful, if you want to create (or delete) some
+  files or directories, which should be writeable by the webserver
+  (often web applications recommend to create directories with rwxrwxrwx
+  permissions (read/writeable by everyone), with PHP Shell you can create
+  directories and files which are writeable only be the webserver process.)
 
-* Telnet. This is the old way to obtain an interactive login on a
-  remote system. Unfortunately telnet is insecure since the password
-  and subsequent traffic are sent in clear text. SSH was developed
-  precisely to replace telnet. The advantage of telnet over PHP Shell
-  is that it gives you an interactive session.
+* Telnet, rsh, rlogin, etc.
+  This is the old way to obtain an interactive login on a remote system,
+  nowadays usually not supported by the server.  SSH was developed
+  precisely to replace them.
 
-* See more alternatives at the Anyterm homepage:
+* See more alternatives for remote administration software at Wikipedia:
 
-    http://anyterm.org/compared.html
+    https://en.wikipedia.org/wiki/Category:Remote_administration_software
 
 
 Download
