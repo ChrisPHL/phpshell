@@ -126,7 +126,7 @@ function get_random_bytes($len) {
 function htmlescape($value) {
 
     if (version_compare(PHP_VERSION, '5.4', '>=')) {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | 'UTF-8');
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE);
     }
 
     // For php 5.3 we could also use the ENT_IGNORE flag, but this works since php 4.0.6
