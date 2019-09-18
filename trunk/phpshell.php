@@ -116,39 +116,11 @@ function get_random_bytes($len) {
     return $phpass->get_random_bytes($len);
 }
 
-/* In php older than 4.0.6, mb_convert_encoding does not exist, so we may pass
- * through bytes that are not valid utf-8. Well, no fixing that, php is not 
- * really good in unicode anyway and in those very old versions all bets are 
- * just off. (Unless someone wants to try to implement all those mb_* functions
- * in plain php, but good luck) Just use a slightly less archaic version or 
- * don't print non-utf8 bytes to the terminal. And anyway browsers can deal 
- * with any strange content thrown at them. */
+
 function htmlescape($value) {
-
-    if (version_compare(PHP_VERSION, '5.4', '>=')) {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE);
-    }
-
-    // For php 5.3 we could also use the ENT_IGNORE flag, but this works since php 4.0.6
-    if (function_exists('mb_convert_encoding')) {
-        /* (hopefully) fixes a strange "htmlspecialchars(): Invalid multibyte sequence in argument" error */
-        $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
-    }
-    return str_replace("\0", "&#000;", 
-    // The encoding parameter was only added in php 4.1, but the default will 
-    // work for us as all characters that are important for html are in the 
-    // ascii range. 
-        htmlspecialchars($value, ENT_QUOTES));
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE);
 }
 
-/* define sha512-function - if possible */
-if (function_exists('hash')) {
-    if ( in_array('sha512', hash_algos())) {
-        function sha512($plaintext) {
-            return hash("sha512", $plaintext);
-        }
-    }
-}
 
 /* even though proc_open has a $cwd argument, we don't use it because php 4 
  * doesn't support it. */
