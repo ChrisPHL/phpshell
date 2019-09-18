@@ -8,8 +8,6 @@
 
 define('PHPSHELL_VERSION', '2.4');
 
-require_once 'PasswordHash.php';
-
 function stripslashes_deep($value) 
 {
     if (is_array($value)) {
@@ -98,14 +96,7 @@ END;
         echo "<p>Write the following line into <tt>config.php</tt> "; 
         echo "in the <tt>[users]</tt> section:</p>\n";
 
-        $portablehashes = $ini['settings']['portable-hashes'];
-        if ($portablehashes !== true) {
-            $portablehashes = false;
-        }
-        $phpass = new PasswordHash(11, $portablehashes);
-        $hash = $phpass->HashPassword($password);
-
-        echo "<pre>".htmlentities($username)." = &quot;$hash&quot;</pre>\n"; ?>
+        echo "<pre>".htmlentities($username)." = &quot;" . password_hash($password, PASSWORD_DEFAULT) . "&quot;</pre>\n"; ?>
         <p>After you have done that, you can return to 
         <a href="phpshell.php">phpshell.php</a> and login.</p> 
         <?php
