@@ -19,21 +19,13 @@
 [users]
 
 ; The default configuration has no users defined, you have to add your
-; own (choose good passwords!).  Add uses as simple
+; own (choose good passwords!).
 ;
-;   username = "password"
-;
-; lines.  Please quote your password using double-quotes as shown.
-; The semi-colon ':' is a reserved character, so do *not* use that in
-; your passwords.
-;
-; For improved security it is *strongly suggested* that you use the
-; pwhash.php script to generate a hashed password and store that
-; instead of the normal clear text password.  Keeping your passwords
-; in hashed form ensures that they cannot be found, even if this file
-; is disclosed.  The passwords are still visible in clear text during
-; the login, though.  Please follow the instructions given in
-; pwhash.php.
+; Use pwhash.php to create entries
+; username = "hashed password"
+; which you can add here.
+; PHP Shell uses PHPs password_hash() / password_verify() functions.
+; Unencrypted passwords are no longer supported.
 
 [aliases]
 

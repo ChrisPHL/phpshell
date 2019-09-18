@@ -642,45 +642,8 @@ function authenticate($username, $password) {
     if (!isset($ini['users'][$username])) {
         return false;
     }
-    $ini_username = $ini['users'][$username];
-    // Plaintext passwords should probably be deprecated/removed. They are not
-    // yet, and they are not marked in any way. These prefixes are the ones 
-    // Phpass can use in its hashes. 
-    foreach (array('_', '$P$', '$H$', '$2a$') as $start) {
-        if (strpos($ini_username, $start) === 0) {
-            // It's a phpass hash
-            // warn if we can't verify the hash
-            if ($start == '_' && !CRYPT_EXT_DES) {
-                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_EXT_DES</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
-            } elseif ($start == '$2a$' && !CRYPT_BLOWFISH) {
-                $warning .= "<p class=\"error\">Error: Your password is encrypted using <tt>CRYPT_BLOWFISH</tt>, which is not supported by this server. Please <a href=\"pwhash.php\">re-hash your password</a>. (If necessary set 'portable-hashes' to 'true' in <tt>config.php</tt></p>\n";
-            }
-            $phpass = get_phpass();
-            return $phpass->CheckPassword($password, $ini_username);
-        }
-    }
-    if (strchr($ini_username, ':') === false) {
-        // No seperator found, assume this is a password in clear text.
-        $warning .= <<<END
-<div class="warning"><b>Warning:</b> Your account uses an 
-unhashed password in config.php.<br> Please change it to a more 
-secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
-warning is displayed only once after login. You may continue using 
-phpshell now.)</div>
-END;
-        return ($ini_username == $password);
-    } else {
-        // old style hash
-        list($fkt, $salt, $hash) = explode(':', $ini_username);
-        $warning .= <<<END
-<div class="warning"><b>Warning:</b> Your account uses a weakly hashed 
-password in config.php.<br> Please change it to a new more 
-secure hash using <a href="pwhash.php">pwhash.php</a>.<br> (This 
-warning is displayed only once after login. You may continue using 
-phpshell now.)</div>
-END;
-        return ($fkt($salt . $password) == $hash);
-    }
+    $ini_passwordhash = $ini['users'][$username];
+    return password_verify($password, $ini_passwordhash);
 }
 
 
