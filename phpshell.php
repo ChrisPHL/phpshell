@@ -11,7 +11,7 @@ define('PHPSHELL_VERSION', '2.4');
   entered.  See the files README, INSTALL, and SECURITY or
   http://phpshell.sourceforge.net/ for further information.
 
-  Copyright (C) 2000-2017 the Phpshell-team
+  Copyright (C) 2000-2020 the Phpshell-team
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -23,10 +23,10 @@ define('PHPSHELL_VERSION', '2.4');
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You can get a copy of the GNU General Public License from this
-  address: https://www.gnu.org/licenses/old-licenses/gpl-2.0#SEC1
-  You can also write to the Free Software Foundation, Inc., 59 Temple
-  Place - Suite 330, Boston, MA  02111-1307, USA.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
   
 */
 
