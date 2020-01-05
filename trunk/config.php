@@ -67,36 +67,6 @@ PS1 = "$ "
 
 file-upload = false
 
-
-; Use more portable but less secure password hashes. 
-; 
-; If set to 'false' (the default), PHP Shell will use PHP's built in Blowfish 
-; password hashing, or if that is unavailable the built in Extended DES 
-; hashing. These options are the most secure, but they may not be available on 
-; all systems. Specifically, older versions of PHP use system libraries of 
-; these hashing algorithms, so it depends on the system PHP is running on 
-; whether these methods are available. As of PHP 5.3 PHP no longer depends on 
-; the system libraries but has these algorithms built-in, so they are always 
-; available. 
-; 
-; If neither Blowfish nor Extended DES are available, PHP Shell falls back to 
-; the private hashing algorithm from Phpass <http://www.openwall.com/phpass/>, 
-; a hashing algorithm based on md5, which is secure against most kinds of 
-; attacks but is faster to brute force than the other algorithms. 
-; 
-; If you generate a password hash on a system where Blowfish or Extended DES
-; is available and you use that hash to log in to a PHP Shell instance on a 
-; machine where they are not available, you will not be able to log in. In 
-; that case, you should set 'portable-hashes' to 'true'. Unless you know that
-; you need to do that, you should leave this setting set to 'false'.
-; 
-; Note that some versions of PHP (including some instances of PHP 5.3) have 
-; bugs in their implementation of Extended DES. If your system does, and you 
-; are unable to log in, use portable hashes. 
-
-portable-hashes = false
-
-
 ; Bind session to the user's IP address. Set to 'true' (default) for the most 
 ; security. If you want to continue the same logged in session from a different
 ; IP address, (for example because you want to connect your laptop to different
