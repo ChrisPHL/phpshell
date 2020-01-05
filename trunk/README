@@ -40,26 +40,17 @@ Requirements
 ============
 
 PHP Shell requires (as the name implies) a web server running PHP. PHP 
-Shell works under PHP 4 and 5, the oldest version known to work is PHP 
-4.3, mainly because that is the oldest version that compiles without 
-adjustments on the developer's linux system. PHP Shell does not depend 
-on any PHP extensions, it is self contained. 
-
-However, there are a number of security related features that are not 
-available in some older versions of PHP, notably: 
-- Blowfish password hashing support (system dependent, built-in to PHP 
-  as of PHP 5.3)
-- httponly session cookies (since PHP 5.2)
+Shell works under PHP 7. Older PHP versions are not supported
+(and you should not use them, as they are not longer supported by the PHP team).
+PHP Shell does not depend on any PHP extensions, it is self contained. 
 
 It is also strongly advised to run PHP Shell over HTTPS, since 
 otherwise passwords and session cookies will be sent in plaintext 
 across the network and anyone intercepting network traffic will be 
 able to steal them. 
 
-PHP Shell gets cryptographically secure random data from the 
-/dev/urandom file in Linux and other Unix systems. If that is not 
-available, PHP Shell only has the request time and process ID as 
-random seeds, which is a lot less entropy. 
+PHP Shell uses standard PHP password_hash()/password_verify functions
+for password hashing.
 
 For better handling of non-UTF8 bytes in shell output, PHP Shell uses 
 PHP's mbstring extension. If it is not installed, invalid UTF-8 may be 
@@ -191,10 +182,6 @@ phpshell.php
 pwhash.php
   A utility used to generate a hashed password.  Please read INSTALL
   for more information.  This file poses no security risk.
-
-PasswordHash.php
-  A library based on the one available from 
-  <http://www.openwall.com/phpass/> to securely store passwords. 
 
 ChangeLog
   This file describe the changes I've made to PHP Shell.  By reading
