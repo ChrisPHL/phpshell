@@ -33,8 +33,6 @@ define('PHPSHELL_VERSION', '2.4');
 /* There are no user-configurable settings in this file anymore, please see
  * config.php instead. */
 
-require_once 'PasswordHash.php';
-
 
 /* This error handler will turn all notices, warnings, and errors into fatal
  * errors, unless they have been suppressed with the @-operator. */
@@ -100,20 +98,6 @@ function stripslashes_deep($value) {
     } else {
         return stripslashes($value);
     }
-}
-
-function get_phpass() {
-    global $ini;
-    static $phpass;
-    if (!isset($phpass)) {
-        $phpass = new PasswordHash(11, $ini['settings']['portable-hashes']);
-    }
-    return $phpass;
-}
-
-function get_random_bytes($len) {
-    $phpass = get_phpass();
-    return $phpass->get_random_bytes($len);
 }
 
 
@@ -224,12 +208,12 @@ function setdefault(&$var, $options) {
 }
 
 function reset_csrf_token() {
-    $_SESSION['csrf_token'] = base64_encode(get_random_bytes(16));
+    $_SESSION['csrf_token'] = base64_encode(random_bytes(16));
 }
 
 // Re-generate a session id. Only has effect if session_start is called lateron.
 function reset_session_id() {
-    $newid = bin2hex(get_random_bytes(16));
+    $newid = bin2hex(random_bytes(16));
     return session_id($newid);
 }
 
@@ -1025,7 +1009,7 @@ if (!$_SESSION['authenticated']) {
      * each login to a unique hit on the server and prevents the simple replay
      * attack where one uses the back button in the browser to replay the POST
      * data from a login. */
-    $_SESSION['nonce'] = base64_encode(get_random_bytes(16));
+    $_SESSION['nonce'] = base64_encode(random_bytes(16));
 
 if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
 
