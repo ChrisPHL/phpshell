@@ -6,7 +6,7 @@
  *
  */
 
-define('PHPSHELL_VERSION', '2.4');
+define('PHPSHELL_VERSION', '2.5');
 
 function stripslashes_deep($value) 
 {
