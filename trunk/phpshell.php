@@ -72,7 +72,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <hr>
 
   <address>
-  Copyright &copy; 2000&ndash;2017, the Phpshell-team. Get the latest
+  Copyright &copy; 2000&ndash;2020, the Phpshell-team. Get the latest
   version at <a
   href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
   </address>
@@ -1199,7 +1199,7 @@ instruction on how to use PHP Shell.</p>
 
 <hr>
 <address>
-Copyright &copy; 2000&ndash;2017, the Phpshell-team. Get the
+Copyright &copy; 2000&ndash;2020, the Phpshell-team. Get the
 latest version at <a
 href="http://phpshell.sourceforge.net/">http://phpshell.sourceforge.net/</a>.
 </address>

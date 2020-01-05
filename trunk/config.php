@@ -3,7 +3,7 @@
 ; being downloaded.
 ;
 ; config.php file for PHP Shell
-; Copyright (C) 2005-2017 the Phpshell-team
+; Copyright (C) 2005-2020 the Phpshell-team
 ; Licensed under the GNU GPL.  See the file COPYING for details.
 
 ; This ini-file has three parts:
