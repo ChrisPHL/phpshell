@@ -630,7 +630,6 @@ $default_settings = array(
     'safe-mode-warning'     => true,
     'file-upload'           => false,
     'PS1'                   => '$ ',
-    'portable-hashes'       => false, 
     'bind-user-IP'          => true, 
     'timeout'               => 180,
     'enable-rate-limiting'  => true,
