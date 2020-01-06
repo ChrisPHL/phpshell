@@ -134,7 +134,9 @@ function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
 
     $io = array();
     $pipes = array(1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
-    if ($fd9) $pipes[9] = array('pipe', 'w');
+    if ($fd9) {
+        $pipes[9] = array('pipe', 'w');
+    }
     $p = proc_open(add_dir($cmd, $dir), $pipes, $io);
 
     /* 
@@ -160,13 +162,15 @@ function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
         // not closed yet. 
         $read = array();
         foreach ($io as $pipe) {
-            if (!feof($pipe))
+            if (!feof($pipe)) {
                 $read[] = $pipe;
+            }
         }
 
         // break out if nothing more to read
-        if (count($read) == 0) 
+        if (count($read) == 0) {
             break;
+        }
 
         // define these because we must pass something by reference
         $write = null;
@@ -190,11 +194,17 @@ function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
 
     fclose($io[1]);
     fclose($io[2]);
-    if ($fd9) fclose($io[9]);
+    if ($fd9) {
+        fclose($io[9]);
+    }
     $status = proc_close($p);
     $ret = array($status, $out);
-    if (!$mergeoutput) $ret[] = $err;
-    if ($fd9) $ret[] = $out9;    
+    if (!$mergeoutput) {
+        $ret[] = $err;
+    }
+    if ($fd9) {
+        $ret[] = $out9;
+    }
     return $ret;
 }
 
@@ -247,8 +257,9 @@ function runcommand($cmd) {
     list($status, $out, $newcwd) = exec_command($command, $_SESSION['cwd'], true, true);
 
     // trim because 'pwd' adds a newline
-    if (strlen($newcwd) > 0 && $newcwd{0} == '/')
+    if (strlen($newcwd) > 0 && $newcwd{0} == '/') {
         $_SESSION['cwd'] = trim($newcwd);
+    }
 
     $_SESSION['output'] .= htmlescape($out);
 }    
@@ -262,7 +273,7 @@ function builtin_download($arg) {
         return;
     }
 
-    if ($arg[0] != '/')  {
+    if ($arg[0] != '/') {
         $downloadfn = $_SESSION['cwd'] . '/' . $arg ;
     } else {
         $downloadfn = $arg ;
@@ -509,7 +520,9 @@ class RateLimit {
     // register a failed login of the current user
     function register_user() {
         $fh = fopen($this->filename, 'a+');
-        if ($this->intemp) {chmod($this->filename, 0640);}
+        if ($this->intemp) {
+            chmod($this->filename, 0640);
+        }
         flock($fh, LOCK_EX);
         $linked = $this->check_linked($fh, $this->filename);
         $table = $this->gc_table($this->parse_file($this->readfile($fh)));
@@ -532,7 +545,9 @@ class RateLimit {
             return;
         }
         $fh = fopen($this->filename, 'a+');
-        if ($this->intemp) {chmod($this->filename, 0640);}
+        if ($this->intemp) {
+            chmod($this->filename, 0640);
+        }
         flock($fh, LOCK_EX);
         $linked = $this->check_linked($fh, $this->filename);
         $table = $this->gc_table($this->parse_file($this->readfile($fh)));
@@ -739,8 +754,7 @@ if (!$newsession && $_SESSION['authenticated']) {
     if ($ini['settings']['bind-user-IP'] && $_SESSION['user-IP'] != $_SERVER['REMOTE_ADDR']) {
         $_SESSION['authenticated'] = false;
     }
-    if ($ini['settings']['timeout'] != 0 && 
-            (time() - $_SESSION['login-timestamp']) / 60 > $ini['settings']['timeout']) {
+    if ($ini['settings']['timeout'] != 0 && (time() - $_SESSION['login-timestamp']) / 60 > $ini['settings']['timeout']) {
         $_SESSION['authenticated'] = false;
     }
 }
@@ -751,8 +765,7 @@ $password = isset($_POST['password']) ? $_POST['password'] : '';
 $command  = isset($_POST['command'])  ? $_POST['command']  : '';
 
 /* Attempt authentication. */
-if (isset($_SESSION['nonce']) && isset($_POST['nonce']) && 
-        $_POST['nonce'] == $_SESSION['nonce'] && isset($_POST['login'])) {
+if (isset($_SESSION['nonce']) && isset($_POST['nonce']) && $_POST['nonce'] == $_SESSION['nonce'] && isset($_POST['login'])) {
     unset($_SESSION['nonce']);
     $passwordchecked = true; 
 
@@ -1061,7 +1074,7 @@ See the <a href="SECURITY">SECURITY</a> file for some background information abo
 ?>
 <p>Current Working Directory:
 <span class="pwd"><?php
-    if ( $showeditor ) {
+    if ($showeditor) {
         echo htmlescape($_SESSION['cwd']) . '</span>';
     } else { /* normal mode - offer navigation via hyperlinks */
         $parts = explode('/', $_SESSION['cwd']);
