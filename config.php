@@ -27,6 +27,7 @@
 ; PHP Shell uses PHPs password_hash() / password_verify() functions.
 ; Unencrypted passwords are no longer supported.
 
+
 [aliases]
 
 ; Alias expansion.  Change the two examples as needed and add your own
@@ -39,7 +40,6 @@ ls = "ls -CvhF"
 ll = "ls -lvhF"
 
 
-
 [settings]
 
 ; General settings for PHP Shell.
@@ -50,13 +50,6 @@ ll = "ls -lvhF"
 ; directory.
 
 home-directory = "."
-
-; Safe Mode warning.  PHP Shell will normally display a big, fat
-; warning if it detects that PHP is running in Safe Mode.  If you find
-; that PHP Shell works anyway, then set this to false to get rid of
-; the warning.
-
-safe-mode-warning = true
 
 ; Prompt string $PS1 ($PS2, $PS3 and $PS4 can not occur when using phpshell, 
 ; since commands are non-interacive!)

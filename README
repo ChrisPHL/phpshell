@@ -66,14 +66,6 @@ the rate limiting to sometimes fail, but shouldn't affect PHP Shell as
 a whole. 
 
 
-Safe Mode
-=========
-
-Safe Mode is the nemisis of PHP Shell.  If PHP is running in Safe Mode
-then PHP Shell will normally not work --- sorry.  Please read the
-detailed explanation in the SECURITY file.
-
-
 Who am I?
 =========
 

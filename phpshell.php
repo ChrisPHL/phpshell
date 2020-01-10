@@ -642,7 +642,6 @@ if (empty($ini['settings'])) {
 /* Default settings --- these settings should always be set to something. */
 $default_settings = array(
     'home-directory'        => '.',
-    'safe-mode-warning'     => true,
     'file-upload'           => false,
     'PS1'                   => '$ ',
     'bind-user-IP'          => true, 
@@ -1023,14 +1022,7 @@ if (!$_SESSION['authenticated']) {
      * data from a login. */
     $_SESSION['nonce'] = base64_encode(random_bytes(16));
 
-if ($ini['settings']['safe-mode-warning'] && ini_get('safe_mode')) { ?>
-
-<div class="warning">
-<b>Warning:</b> <a href="https://secure.php.net/features.safe-mode">Safe Mode</a> is enabled. PHP Shell will probably not work correctly. 
-See the <a href="SECURITY">SECURITY</a> file for some background information about Safe Mode and its effects on PHP Shell.
-</div>
-
-<?php } /* Safe mode. */ ?>
+?>
 
 <fieldset>
   <legend>Authentication</legend>
