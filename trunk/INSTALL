@@ -93,10 +93,6 @@ home-directory = "Path/to/some/directory":
 what directory should be considered as home-directory, where should the
 user be after startup and where will he return after a bare "cd" command.
 
-safe-mode-warning = true (or false):
-should PHP Shell print a warning, if PHP safe mode is detected? PHP Shell will 
-probably not work correctly if safe mode is enabled.
-
 PS1 = "string"  (e.g.: "$ "):
 What string should be used as standard prompt string.
 
