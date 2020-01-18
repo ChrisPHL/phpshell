@@ -112,13 +112,6 @@ function add_dir($cmd, $dir){
     return "cd ".escapeshellarg($dir)."\n".$cmd;
 }
 
-/* executes a command in the given working directory and returns output */
-function exec_cwd($cmd, $directory) {   
-    list($status, $stdout, $stderr) = exec_command($cmd, $directory);
-    return $stdout;
-}
-
-
 
 /* 
  * Where the real magic happens
