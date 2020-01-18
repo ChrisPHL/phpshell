@@ -669,17 +669,12 @@ $expiredsession = false;
 
 ini_set('session.use_only_cookies', '1');
 
-if (version_compare(PHP_VERSION, '5.2.0', '>=')) {
-    session_set_cookie_params(0,    // cookie lifetime until browser closes
-        $_SERVER['REQUEST_URI'],    // bind cookie to this specific URI
-        null,                       // use default domain (www.site.com)
-        $https,                     // If called over HTTPS, lock cookie to that
-        true                        // httponly, available since PHP 5.2
-    );
-} else {
-    // same as above, but without 'httponly'
-    session_set_cookie_params(0, $_SERVER['REQUEST_URI'], null, $https);
-}
+session_set_cookie_params(0,    // cookie lifetime until browser closes
+    $_SERVER['REQUEST_URI'],    // bind cookie to this specific URI
+    null,                       // use default domain (www.site.com)
+    $https,                     // If called over HTTPS, lock cookie to that
+    true                        // httponly, available since PHP 5.2
+);
 
 if ($newsession) {
     reset_session_id();
