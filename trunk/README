@@ -24,7 +24,7 @@ There are some limitations on what kind of programs you can run.  It
 won't do no good if you start a graphical program like Firefox or even
 a console based one like vi.  All programs have to be strictly command
 line programs, and they will have no chance of getting user input
-after they have been lunched.
+after they have been launched.
 
 They probably also have to terminate within 30 seconds, as this is the
 default time-limit imposed unto all PHP scripts, to prevent them from
@@ -49,7 +49,7 @@ otherwise passwords and session cookies will be sent in plaintext
 across the network and anyone intercepting network traffic will be 
 able to steal them. 
 
-PHP Shell uses standard PHP password_hash()/password_verify functions
+PHP Shell uses standard PHP password_hash()/password_verify() functions
 for password hashing.
 
 For better handling of non-UTF8 bytes in shell output, PHP Shell uses 
