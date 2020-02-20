@@ -106,13 +106,6 @@ function htmlescape($value) {
 }
 
 
-/* even though proc_open has a $cwd argument, we don't use it because php 4 
- * doesn't support it. */
-function add_dir($cmd, $dir){
-    return "cd ".escapeshellarg($dir)."\n".$cmd;
-}
-
-
 /* 
  * Where the real magic happens
  *
@@ -130,7 +123,7 @@ function exec_command($cmd, $dir, $mergeoutput=false, $fd9=false) {
     if ($fd9) {
         $pipes[9] = array('pipe', 'w');
     }
-    $p = proc_open(add_dir($cmd, $dir), $pipes, $io);
+    $p = proc_open($cmd, $pipes, $io, $dir);
 
     /* 
      * Read output using stream_select. Reading the pipes sequentially could
@@ -819,8 +812,8 @@ if ($_SESSION['authenticated']) {
     /* Save content from 'editor' */
     if (isset($_POST['savefile']) && isset($_POST["filetoedit"]) && $_POST["filetoedit"] != "") {
         $io = array();
-        $p = proc_open(add_dir('cat >'.escapeshellarg($_POST['filetoedit']), $_SESSION['cwd']), 
-                       array(0 => array('pipe', 'r'), 2 => array('pipe', 'w')), $io);
+        $p = proc_open('cat >'.escapeshellarg($_POST['filetoedit']), 
+                       array(0 => array('pipe', 'r'), 2 => array('pipe', 'w')), $io, $_SESSION['cwd']);
 
         /*
          * I'm not entirely sure this approach will not deadlock, but I think 
