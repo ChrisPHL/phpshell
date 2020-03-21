@@ -382,6 +382,108 @@ function builtin_history($arg) {
 }
 
 
+function builtin_gzip($arg) {
+    /* gzip a file */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_gzip filename\n(you forgot filename)\n";
+        return;
+    }
+
+    /* test if file exists */
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_gzip: file not found: '$arg'\n";
+        return;
+    }
+
+    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_gzip: Permission denied for file '$arg'\n";
+        return;
+    }
+
+    if (copy($_SESSION['cwd'] . '/' . $arg, 'compress.zlib://' . $_SESSION['cwd'] . '/' . $arg . '.gz')) {
+		unlink($_SESSION['cwd'] . '/' . $arg);
+	}
+}
+
+function builtin_gunzip($arg) {
+    /* gunzip a file */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_gunzip filename\n(you forgot filename)\n";
+        return;
+    }
+    /* test if file exists */
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_gunzip: file not found: '$arg'\n";
+        return;
+    }
+    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_gunzip: Permission denied for file '$arg'\n";
+        return;
+    }
+    if (pathinfo($arg, PATHINFO_EXTENSION) != 'gz') {
+        $_SESSION['output'] .= "ps_gunzip: Filename should have a .gz extension\n";
+        return;
+    }
+    if (copy('compress.zlib://' . $_SESSION['cwd'] . '/' . $arg, $_SESSION['cwd'] . '/' . basename($arg, '.gz'))) {
+		unlink($_SESSION['cwd'] . '/' . $arg);
+	}
+}
+
+function builtin_bzip2($arg) {
+    /* bzip2 a file */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_bzip2 filename\n(you forgot filename)\n";
+        return;
+    }
+
+    /* test if file exists */
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_bzip2: file not found: '$arg'\n";
+        return;
+    }
+
+    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_bzip2: Permission denied for file '$arg'\n";
+        return;
+    }
+
+    if (copy($_SESSION['cwd'] . '/' . $arg, 'compress.bzip2://' . $_SESSION['cwd'] . '/' . $arg . '.bz2')) {
+		unlink($_SESSION['cwd'] . '/' . $arg);
+	}
+}
+
+function builtin_bunzip2($arg) {
+    /* bunzip2 a file */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_bunzip2 filename\n(you forgot filename)\n";
+        return;
+    }
+    /* test if file exists */
+    clearstatcache();
+    if (!file_exists($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_bunzip2: file not found: '$arg'\n";
+        return;
+    }
+    if (!is_readable($_SESSION['cwd'] . '/' . $arg)) {
+        $_SESSION['output'] .= "ps_bunzip2: Permission denied for file '$arg'\n";
+        return;
+    }
+    if (pathinfo($arg, PATHINFO_EXTENSION) != 'bz2') {
+        $_SESSION['output'] .= "ps_bunzip2 Filename should have a .gz extension\n";
+        return;
+    }
+    if (copy('compress.bzip2://' . $_SESSION['cwd'] . '/' . $arg, $_SESSION['cwd'] . '/' . basename($arg, '.bz2'))) {
+		unlink($_SESSION['cwd'] . '/' . $arg);
+	}
+}
+
 /* 
  * To be as safe as possible against brute-force password guessing attempts and
  * against DOS attacks that try to exploit the expensive password checking of 
@@ -619,7 +721,11 @@ $builtins = array(
     'ps_exit' => 'builtin_logout',
     'ps_logout' => 'builtin_logout',
     'ps_history' => 'builtin_history',
-    'ps_clear' => 'builtin_clear');
+    'ps_clear' => 'builtin_clear',
+    'ps_gzip' => 'builtin_gzip',
+    'ps_gunzip' => 'builtin_gunzip',
+    'ps_bzip2' => 'builtin_bzip2',
+    'ps_bunzip2' => 'builtin_bunzip2');
 
 
 
