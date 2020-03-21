@@ -605,14 +605,21 @@ function authenticate($username, $password) {
 
 
 
-/* the builtins this shell recognizes */
+/* the builtins this shell recognizes.
+ * f */
 $builtins = array(
     'download' => 'builtin_download',
     'editor' => 'builtin_editor',
     'exit' => 'builtin_logout',
     'logout' => 'builtin_logout',
     'history' => 'builtin_history',
-    'clear' => 'builtin_clear');
+    'clear' => 'builtin_clear',
+    'ps_download' => 'builtin_download',
+    'ps_editor' => 'builtin_editor',
+    'ps_exit' => 'builtin_logout',
+    'ps_logout' => 'builtin_logout',
+    'ps_history' => 'builtin_history',
+    'ps_clear' => 'builtin_clear');
 
 
 
