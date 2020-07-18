@@ -393,8 +393,8 @@ function builtin_gzip($arg) {
     }
 
     if (copy($_SESSION['cwd'] . '/' . $arg, 'compress.zlib://' . $_SESSION['cwd'] . '/' . $arg . '.gz')) {
-		unlink($_SESSION['cwd'] . '/' . $arg);
-	}
+    unlink($_SESSION['cwd'] . '/' . $arg);
+    }
 }
 
 function builtin_gunzip($arg) {
@@ -419,8 +419,8 @@ function builtin_gunzip($arg) {
         return;
     }
     if (copy('compress.zlib://' . $_SESSION['cwd'] . '/' . $arg, $_SESSION['cwd'] . '/' . basename($arg, '.gz'))) {
-		unlink($_SESSION['cwd'] . '/' . $arg);
-	}
+        unlink($_SESSION['cwd'] . '/' . $arg);
+    }
 }
 
 function builtin_bzip2($arg) {
@@ -444,8 +444,8 @@ function builtin_bzip2($arg) {
     }
 
     if (copy($_SESSION['cwd'] . '/' . $arg, 'compress.bzip2://' . $_SESSION['cwd'] . '/' . $arg . '.bz2')) {
-		unlink($_SESSION['cwd'] . '/' . $arg);
-	}
+        unlink($_SESSION['cwd'] . '/' . $arg);
+    }
 }
 
 function builtin_bunzip2($arg) {
@@ -470,8 +470,47 @@ function builtin_bunzip2($arg) {
         return;
     }
     if (copy('compress.bzip2://' . $_SESSION['cwd'] . '/' . $arg, $_SESSION['cwd'] . '/' . basename($arg, '.bz2'))) {
-		unlink($_SESSION['cwd'] . '/' . $arg);
-	}
+        unlink($_SESSION['cwd'] . '/' . $arg);
+    }
+}
+
+function builtin_mkdir($arg) {
+    /* create a directory (using PHP functions, not the shell) */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_mkdir directoryname\n(you forgot the directoryname)\n";
+        return;
+    }
+    
+    if (!mkdir($arg)) {
+        $_SESSION['output'] .= "ps_mkdir: Failed to create directory.\n";
+    }
+}
+
+function builtin_rmdir($arg) {
+    /* remove a directory (using PHP functions, not the shell) */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_rmdir directoryname\n(you forgot the directoryname)\n";
+        return;
+    }
+    
+    if (!rmdir($arg)) {
+        $_SESSION['output'] .= "ps_rmdir: Failed to remove directory.\n";
+    }
+}
+
+function builtin_rm($arg) {
+    /* remove a file (using PHP functions, not the shell) */
+
+    if ($arg == '') {
+        $_SESSION['output'] .= "Syntax: ps_rm filename\n(you forgot the filename)\n";
+        return;
+    }
+    
+    if (!unlink($arg)) {
+        $_SESSION['output'] .= "ps_rm: Failed to remove file.\n";
+    }
 }
 
 /* 
@@ -712,6 +751,10 @@ $builtins = array(
     'ps_logout' => 'builtin_logout',
     'ps_history' => 'builtin_history',
     'ps_clear' => 'builtin_clear',
+    'ps_mkdir' => 'builtin_mkdir',
+    'ps_rmdir' => 'builtin_rmdir',
+    'ps_rm' => 'builtin_rm',
+    'ps_del' => 'builtin_rm',
     'ps_gzip' => 'builtin_gzip',
     'ps_gunzip' => 'builtin_gunzip',
     'ps_bzip2' => 'builtin_bzip2',
