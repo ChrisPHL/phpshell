@@ -8,18 +8,6 @@
 
 define('PHPSHELL_VERSION', '2.5');
 
-function stripslashes_deep($value) 
-{
-    if (is_array($value)) {
-        return array_map('stripslashes_deep', $value);
-    } else {
-        return stripslashes($value);
-    }
-}
-
-if (get_magic_quotes_gpc()) {
-    $_POST = stripslashes_deep($_POST);
-}
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
