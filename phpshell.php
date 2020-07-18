@@ -92,13 +92,6 @@ function builtin_clear($arg) {
     $_SESSION['output'] = '';
 }
 
-function stripslashes_deep($value) {
-    if (is_array($value)) {
-        return array_map('stripslashes_deep', $value);
-    } else {
-        return stripslashes($value);
-    }
-}
 
 
 function htmlescape($value) {
@@ -796,9 +789,6 @@ if (!isset($_SESSION['csrf_token'])) {
 
 /** get POST variables **/
 
-if (get_magic_quotes_gpc()) {
-    $_POST = stripslashes_deep($_POST);
-}
 
 /* Initialize some variables we need */
 setdefault($_SESSION['env']['rows'], array(@$_POST['rows'], @$_SESSION['env']['rows'], 24));
