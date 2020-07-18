@@ -1235,7 +1235,7 @@ echo $warning;
   maxlength="3" value="<?php echo $rows ?>"> &times; <input type="text"
   name="columns" size="2" maxlength="3" value="<?php echo $columns
   ?>"></span><br>
-<input type="submit" value="Execute command">
+<input type="submit" id="executebutton" value="Execute command" onclick="javascript:document.getElementById('executebutton').value='Command was submitted';">
 <input type="submit" name="clear" value="Clear screen">
 <?php } else { /* for 'editor-mode' */ ?>
 <input type="hidden" name="filetoedit" id="filetoedit" value="<?php print($filetoedit) ?>">
