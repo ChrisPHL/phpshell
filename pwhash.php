@@ -20,14 +20,11 @@ if (empty($ini['settings'])) {
 }
 
 ?>
-<?php echo '<?xml version="1.0" ?>' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
   <title>Password Hasher for PHP Shell <?php echo PHPSHELL_VERSION ?></title>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
   <meta name="generator" content="phpshell"/>
   <meta name="robots" content="noindex, follow"/>
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico"/>
@@ -42,7 +39,7 @@ This password hasher creates salted and hashed password entries for your
 PHP shell config files.
 </p>
 
-<form action="" method="post">
+<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 
 <fieldset>
   <legend>Username/Password</legend>
@@ -81,8 +78,8 @@ It can contain only letters and digits and must start with a letter.<br/>
 Please choose another username and try again.</p>
 END;
     } else {
-        echo "<p>Write the following line into <tt>config.php</tt> "; 
-        echo "in the <tt>[users]</tt> section:</p>\n";
+        echo "<p>Write the following line into <span style='font-family: monospace;'>config.php</span> "; 
+        echo "in the <span style='font-family: monospace;'>[users]</span> section:</p>\n";
 
         echo "<pre>".htmlentities($username)." = &quot;" . password_hash($password, PASSWORD_DEFAULT) . "&quot;</pre>\n"; ?>
         <p>After you have done that, you can return to 
@@ -97,7 +94,6 @@ END;
 </fieldset>
 
 </form>
-
 
 <hr/>
 

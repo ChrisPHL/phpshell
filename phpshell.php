@@ -42,13 +42,10 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
      * error_reporting() return zero, and we don't want to die in that case.
      * That happens mostly in cases where we can just ignore it. */
     if (error_reporting() != 0) {
-        die('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-   "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+        die('<!DOCTYPE html>
+<html lang="en">
 <head>
   <title>PHP Shell ' . PHPSHELL_VERSION . '</title>
-  <meta http-equiv="Content-Script-Type" content="text/javascript">
-  <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
   <meta name="robots" content="noindex, follow">
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
@@ -59,7 +56,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <p><b>' . $errstr . '</b></p>
   <p>in <b>' . $errfile . '</b>, line <b>' . $errline . '</b>.</p>
 
-  <form name="shell" enctype="multipart/form-data" action="" method="post"><p>
+  <form name="shell" enctype="multipart/form-data" action="' . $_SERVER['PHP_SELF'] . '" method="post"><p>
     If you want to try to reset your session: 
     <input type="submit" name="logout" value="Logout" style="display: inline;">
   </p></form>
@@ -1006,19 +1003,16 @@ if ($_SESSION['authenticated']) {
 
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-   "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <title>PHP Shell <?php echo PHPSHELL_VERSION ?></title>
-  <meta http-equiv="Content-Script-Type" content="text/javascript">
-  <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="generator" content="phpshell">
   <meta name="robots" content="noindex, follow">
   <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
   <link rel="stylesheet" href="style.css" type="text/css">
 
-  <script type="text/javascript">
+  <script>
   <?php if ($_SESSION['authenticated'] && ! $showeditor) { ?>
 
   var current_line = 0;
@@ -1093,7 +1087,7 @@ if ($_SESSION['authenticated']) {
 
 <h1>PHP Shell <?php echo PHPSHELL_VERSION ?></h1>
 
-<form name="shell" enctype="multipart/form-data" action="" method="post">
+<form name="shell" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 <div><input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
 <input name="levelup" id="levelup" type="hidden">
 <input name="changedirectory" id="changedirectory" type="hidden"></div>
@@ -1250,7 +1244,7 @@ echo $warning;
 </form>
 
 <?php if ($ini['settings']['file-upload']) { ?>
-<form name="upload" enctype="multipart/form-data" action="" method="post">
+<form name="upload" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 <div><br><br>
 <input name="csrf_token" type="hidden" value="<?php echo $_SESSION['csrf_token'];?>">
 <fieldset>
