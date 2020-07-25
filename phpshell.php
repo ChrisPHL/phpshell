@@ -513,7 +513,6 @@ function builtin_rm($arg) {
     }
 }
 
-
 function builtin_ls() {
     /* List directory contents (using PHP functions, not the shell) */
 
@@ -522,6 +521,12 @@ function builtin_ls() {
     foreach ($files as $file) {
         $_SESSION['output'] .= "$file\n";
     }
+}
+
+function builtin_pwd() {
+    /* Print the current working directory (using PHP functions, not the shell) */
+
+    $_SESSION['output'] .= $_SESSION['cwd']. "\n";
 }
 
 
@@ -541,6 +546,7 @@ function builtin_help() {
     $_SESSION['output'] .= "    ps_rm\n";
     $_SESSION['output'] .= "    ps_del\n";
     $_SESSION['output'] .= "    ps_ls\n";
+    $_SESSION['output'] .= "    ps_pwd\n";
     $_SESSION['output'] .= "    ps_dir\n";
     $_SESSION['output'] .= "    ps_help\n";
     $_SESSION['output'] .= "    ps_gzip\n";
@@ -794,6 +800,7 @@ $builtins = array(
     'ps_del' => 'builtin_rm',
     'ps_ls' => 'builtin_ls',
     'ps_dir' => 'builtin_ls',
+    'ps_pwd' => 'builtin_pwd',
     'ps_help' => 'builtin_help',
     'ps_gzip' => 'builtin_gzip',
     'ps_gunzip' => 'builtin_gunzip',

@@ -130,6 +130,34 @@ will output 0 instead of 1. But in one line it works as expected:
 $ A=1 ; echo $A
 will give you the expected result: 1
 
+
+Internal commands
+=================
+
+PHP Shell understands the following internal commands:
+(implemented in PHP for elementary file manipulation)
+One must be on one line and can not be mixed with shell commands.
+
+    ps_download
+    ps_editor
+    ps_exit
+    ps_logout
+    ps_history
+    ps_clear
+    ps_mkdir
+    ps_rmdir
+    ps_rm
+    ps_del
+    ps_ls
+    ps_pwd
+    ps_dir
+    ps_help
+    ps_gzip
+    ps_gunzip
+    ps_bzip2
+    ps_bunzip2
+
+
 Alternatives
 ============
 
