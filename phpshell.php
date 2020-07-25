@@ -513,6 +513,43 @@ function builtin_rm($arg) {
     }
 }
 
+
+function builtin_ls() {
+    /* List directory contents (using PHP functions, not the shell) */
+
+    $files = scandir(".");
+    sort($files);
+    foreach ($files as $file) {
+        $_SESSION['output'] .= "$file\n";
+    }
+}
+
+
+function builtin_help() {
+    /* List internal commands. */
+
+    $_SESSION['output'] .= "PHP Shell understands the following internal commands:\n";
+    $_SESSION['output'] .= "(One must be on one line and can not be mixed with shell commands)\n\n";
+    $_SESSION['output'] .= "    ps_download\n";
+    $_SESSION['output'] .= "    ps_editor\n";
+    $_SESSION['output'] .= "    ps_exit\n";
+    $_SESSION['output'] .= "    ps_logout\n";
+    $_SESSION['output'] .= "    ps_history\n";
+    $_SESSION['output'] .= "    ps_clear\n";
+    $_SESSION['output'] .= "    ps_mkdir\n";
+    $_SESSION['output'] .= "    ps_rmdir\n";
+    $_SESSION['output'] .= "    ps_rm\n";
+    $_SESSION['output'] .= "    ps_del\n";
+    $_SESSION['output'] .= "    ps_ls\n";
+    $_SESSION['output'] .= "    ps_dir\n";
+    $_SESSION['output'] .= "    ps_help\n";
+    $_SESSION['output'] .= "    ps_gzip\n";
+    $_SESSION['output'] .= "    ps_gunzip\n";
+    $_SESSION['output'] .= "    ps_bzip2\n";
+    $_SESSION['output'] .= "    ps_bunzip2\n\n";
+}
+
+
 /* 
  * To be as safe as possible against brute-force password guessing attempts and
  * against DOS attacks that try to exploit the expensive password checking of 
@@ -755,6 +792,9 @@ $builtins = array(
     'ps_rmdir' => 'builtin_rmdir',
     'ps_rm' => 'builtin_rm',
     'ps_del' => 'builtin_rm',
+    'ps_ls' => 'builtin_ls',
+    'ps_dir' => 'builtin_ls',
+    'ps_help' => 'builtin_help',
     'ps_gzip' => 'builtin_gzip',
     'ps_gunzip' => 'builtin_gunzip',
     'ps_bzip2' => 'builtin_bzip2',
