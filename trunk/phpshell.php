@@ -1,6 +1,6 @@
 <?php // -*- coding: utf-8 -*-
 
-define('PHPSHELL_VERSION', '2.5');
+define('PHPSHELL_VERSION', '2.6');
 /*
 
   **************************************************************
