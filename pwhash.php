@@ -6,7 +6,7 @@
  *
  */
 
-define('PHPSHELL_VERSION', '2.5');
+define('PHPSHELL_VERSION', '2.6');
 
 
 $username = isset($_POST['username']) ? $_POST['username'] : '';

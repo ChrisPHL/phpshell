@@ -1,5 +1,14 @@
-Phpshell 2.5
-------------
+Phpshell 2.6 (2020-07-26)
+-------------------------
+  * Removed workarounds for old PHP versions.
+  * Prefix all internal commands with "ps_".
+  * Add some internal commands for elementary file manipulation (implemented in PHP).
+  * Immediately show a response ("Command was submitted"), so that the user gets a
+    response for longer running commands (e.g.: sleep 10).
+  * Use HTML5.
+
+Phpshell 2.5 (2020-01-05)
+-------------------------
   * Fixes for PHP 7
   * no longer support plain text passwords in config file
   * use standard PHP password_hash/password_verify functions
