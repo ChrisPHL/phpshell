@@ -38,7 +38,7 @@ define('PHPSHELL_VERSION', '2.6');
  * errors, unless they have been suppressed with the @-operator. */
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 {
-    /* The @-operator (used with chdir() below) temporarely makes
+    /* The @-operator (used with chdir() below) temporarily makes
      * error_reporting() return zero, and we don't want to die in that case.
      * That happens mostly in cases where we can just ignore it. */
     if (error_reporting() != 0) {
@@ -565,7 +565,7 @@ function builtin_help() {
  * the file opened and locked during the password verification would provide an
  * attack vector to DOS attacks. When recording the result of that verification 
  * we need to parse the file again in case there have been any updates 
- * inbetween. However, the file is simple to parse so the parsing step is 
+ * between. However, the file is simple to parse so the parsing step is 
  * probably much faster than the password verification. 
  * 
  * PHP Shell assumes file locking will work. It won't work if the file is stored

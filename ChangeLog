@@ -60,7 +60,7 @@ Phpshell 2.5 (2020-01-05)
   In my private branch: 
   * Refactored the code to handle builtins to make it more generic
   * Added a 'download' builtin
-  * Changed the directory handling. 'cd' is now no longer a buitin but is handled by the shell itself. When the shell is done it sends its working directory back to php over a special file descriptor. 
+  * Changed the directory handling. 'cd' is now no longer a builtin but is handled by the shell itself. When the shell is done it sends its working directory back to php over a special file descriptor. 
   * Changed all calls to file handling functions with shell calls to work with the new directory handling and to be no longer hindered by php's open_basedir setting. 
   * Correctly encode \0 characters in shell output.
   * Removed charset parameter from htmlspecialchars, to handle cases where the output isn't valid UTF-8. 
@@ -89,7 +89,7 @@ Phpshell 2.3
 
 ------------------------------------------------------
 2010-11-29  Wolfgang Dautermann
-    * Reimplemented the feature to change to subdirectorys using mouseclicks (was available in older version)
+    * Reimplemented the feature to change to subdirectories using mouseclicks (was available in older version)
 
 2010-11-21  Wolfgang Dautermann
     * One can navigate to higher level directories using hyperlinks.
