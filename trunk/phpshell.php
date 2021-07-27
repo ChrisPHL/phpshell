@@ -48,7 +48,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
   <title>PHP Shell ' . PHPSHELL_VERSION . '</title>
   <meta name="generator" content="phpshell">
   <meta name="robots" content="noindex, follow">
-  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="phpshell.svg">
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body>
@@ -1099,7 +1099,7 @@ if ($_SESSION['authenticated']) {
   <title>PHP Shell <?php echo PHPSHELL_VERSION ?></title>
   <meta name="generator" content="phpshell">
   <meta name="robots" content="noindex, follow">
-  <link rel="shortcut icon" type="image/x-icon" href="phpshell.ico">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="phpshell.svg">
   <link rel="stylesheet" href="style.css" type="text/css">
 
   <script>
